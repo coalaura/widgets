@@ -1,0 +1,12 @@
+<div id="date" class="value"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" crossorigin="anonymous"></script>
+<script>
+	const format = "{{ .format }}";
+
+	const $date = document.getElementById("date");
+
+	function tick() {
+		$date.innerText = dayjs().format(format);
+	}
+</script>

@@ -1,0 +1,48 @@
+<style>
+	#progress {
+		--amount: 20%;
+
+		position: relative;
+		padding: 0.15rem;
+		border-radius: 0.25rem;
+		text-align: center;
+		width: 100%;
+	}
+
+	#progress::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: var(--amount);
+		background: {{ .bg }};
+		z-index: -1;
+	}
+</style>
+
+<div id="progress" class="value"></div>
+
+<script>
+	const from = new Date("{{ .from }}"),
+		to = new Date("{{ .to }}");
+
+	if (isNaN(from)) throw new Error("from is invalid");
+	if (isNaN(to)) throw new Error("to is invalid");
+	if (from > to) throw new Error("from cannot be after to");
+
+	const $progress = document.getElementById("progress");
+
+	function tick() {
+		const now = new Date();
+
+		let percentage = ((now - from) / (to - from)) * 100;
+
+		percentage = Math.max(0, Math.min(100, percentage));
+
+		const rounded = Math.round(percentage);
+
+		$progress.textContent = rounded + "%";
+		$progress.style.setProperty("--amount", percentage + "%");
+	}
+</script>

@@ -1,0 +1,180 @@
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	background: #181926;
+	color: #cad3f5;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+	font-size: 18px;
+}
+
+body {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#page {
+	width: 100%;
+	max-width: 1000px;
+	padding: 20px;
+	background: #24273a;
+	border-radius: 6px;
+}
+
+h1 {
+	margin: 0;
+	margin-bottom: 20px;
+	font-size: 35px;
+	font-weight: 700;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	color: #c6a0f6;
+}
+
+#widgets {
+	display: flex;
+	flex-direction: column;
+}
+
+.widget {
+	padding: 10px 15px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-weight: 600;
+	border-radius: 6px;
+	transition: 250ms;
+	cursor: pointer;
+	gap: 20px;
+}
+
+.widget:hover {
+	background: #1e2030;
+}
+
+.description {
+	font-size: 14px;
+	font-weight: 500;
+	font-style: italic;
+	color: #b8c0e0;
+	line-height: 15px;
+	margin-top: 5px;
+}
+
+iframe {
+	width: 100%;
+	height: 4rem;
+	padding: 10px;
+	background: #1e2030;
+	border: none;
+	border-radius: 6px;
+	transition: 250ms;
+	flex-shrink: 0;
+}
+
+.widget iframe {
+	width: 340px;
+}
+
+.widget:hover iframe {
+	background: #24273a;
+}
+
+#options {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	justify-content: space-between;
+	gap: 20px;
+	margin-bottom: 20px;
+}
+
+.option {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+}
+
+label {
+	display: block;
+	width: 65px;
+	flex-shrink: 0;
+	font-weight: 600;
+	font-size: 16px;
+	color: #b7bdf8;
+}
+
+button,
+select,
+input {
+	background: #1e2030;
+	padding: 3px 5px;
+	border: 1px solid rgba(183, 190, 248, 0.15);
+	font-style: italic;
+	width: 100%;
+	outline: none;
+	font-size: 16px;
+	border-radius: 2px;
+	color: #cad3f5;
+	height: 30px;
+}
+
+input[type="color"] {
+	padding: 0;
+}
+
+button {
+	flex-shrink: 0;
+	font-style: normal;
+	cursor: pointer;
+	color: #f4dbd6;
+}
+
+button.undo {
+	display: none;
+	color: #ed8796;
+}
+
+button.undo.changed {
+	display: block;
+}
+
+#export {
+	color: #a6da95;
+	transition: 250ms;
+}
+
+#export.copied {
+	color: #c6a0f6;
+}
+
+.square {
+	width: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#footer {
+	font-size: 12px;
+	font-style: italic;
+	margin-top: 10px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+#home {
+	font-style: normal;
+}
+
+a {
+	color: #8aadf4;
+	text-decoration: none;
+}
