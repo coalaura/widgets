@@ -1,13 +1,7 @@
-<style>
-	#binary {
-		font-family: monospace;
-	}
-</style>
-
 <div id="binary" class="value"></div>
 
 <script>
-	const separator = "{{ .separator }}";
+	const rule = "{{ .rule }}";
 
 	const $clock = document.getElementById("binary");
 
@@ -22,6 +16,6 @@
 			minutes = asBinary(now.getMinutes(), 6),
 			seconds = asBinary(now.getSeconds(), 6);
 
-		$clock.innerText = [hours, minutes, seconds].join(separator);
+		$clock.innerText = [hours, minutes, seconds].join(rule);
 	}
 </script>

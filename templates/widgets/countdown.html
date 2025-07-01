@@ -10,10 +10,16 @@
 
 	const $countdown = document.getElementById("countdown");
 
+	function formatUnit(value, unit) {
+		if (value === 0) return "";
+
+		return `${value} ${unit}${value !== 1 ? "s" : ""}`;
+	}
+
 	function tick() {
 		const now = dayjs();
 
-		if (now.isAfter(targetDate)) {
+		if (now.isAfter(date)) {
 			$countdown.innerText = `${event} has arrived!`;
 
 			return;
@@ -21,11 +27,29 @@
 
 		const duration = dayjs.duration(date.diff(now));
 
-		const days = Math.floor(duration.asDays()),
+		let output = "";
+
+		const years = duration.years(),
+			months = duration.months(),
+			days = duration.days(),
 			hours = duration.hours(),
 			minutes = duration.minutes(),
 			seconds = duration.seconds();
 
-		$countdown.innerText = `${eventName} in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+		if (years > 0) {
+			output = `${formatUnit(years, "year")} ${formatUnit(months, "month")}`;
+		} else if (months > 0) {
+			output = `${formatUnit(months, "month")} ${formatUnit(days, "day")}`;
+		} else if (days > 0) {
+			output = `${formatUnit(days, "day")} ${formatUnit(hours, "hour")}`;
+		} else if (hours > 0) {
+			output = `${formatUnit(hours, "hour")} ${formatUnit(minutes, "minute")}`;
+		} else if (minutes > 0) {
+			output = `${formatUnit(minutes, "minute")} ${formatUnit(seconds, "second")}`;
+		} else {
+			output = formatUnit(seconds, "second");
+		}
+
+		$countdown.innerText = `${event} in: ${output.trim()}`;
 	}
 </script>

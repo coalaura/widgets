@@ -44,11 +44,11 @@ func NewWidget(name, description string, options Opts, handler Handler) *Widget 
 		options = make(Opts)
 	}
 
-	options["font"] = NewOpt("Roboto", "The font family for the widget text. Accepts any valid CSS font-family value (e.g., 'Roboto', 'Arial, sans-serif').")
-	options["size"] = NewOpt("100%", "The font size of the widget text. Accepts any valid CSS font-size value (e.g., '24px', '1.5em', '100%').")
-	options["color"] = NewOpt("#cad3f5", "The color of the widget text. Accepts any valid CSS color value (e.g., '#cad3f5', 'rgb(202, 211, 245)', 'white').")
-	options["weight"] = NewOpt("700", "The font weight of the widget text. Accepts CSS font-weight numeric values (100-900) or keywords ('normal', 'bold').")
-	options["align"] = NewOpt("left", "The horizontal alignment of the widget text. Accepts 'left', 'center', 'right', or 'justify'.")
+	options.RegisterDefault("font", "JetBrains Mono", "The font family for the widget text. Accepts any valid CSS font-family value.")
+	options.RegisterDefault("size", "100%", "The font size of the widget text. Accepts any valid CSS font-size value.")
+	options.RegisterDefault("color", "#cad3f5", "The color of the widget text. Accepts any valid CSS color value.")
+	options.RegisterDefault("weight", "700", "The font weight of the widget text. Accepts CSS font-weight numeric values (100-900).")
+	options.RegisterDefault("align", "left", "The horizontal alignment of the widget text. Accepts 'left', 'center' or 'right'.")
 
 	return &Widget{
 		Name:        name,
@@ -62,6 +62,14 @@ func NewWidgetManager() *WidgetManager {
 	return &WidgetManager{
 		widgets: make(map[string]*Widget),
 	}
+}
+
+func (o *Opts) RegisterDefault(name, def, description string) {
+	if _, ok := (*o)[name]; ok {
+		return
+	}
+
+	(*o)[name] = NewOpt(def, description)
 }
 
 func (w *Widget) Render(c *fiber.Ctx) error {
@@ -147,7 +155,13 @@ func (m *WidgetManager) RegisterDefault() {
 			"prefix": NewOpt("IP is ", "A string to display before the IP address. Can be left empty."),
 		},
 		func(c *fiber.Ctx, options map[string]string) {
-			options["ip"] = c.IP()
+			ip := c.IP()
+
+			if ip == "" {
+				ip = "n/a"
+			}
+
+			options["ip"] = ip
 		},
 	)
 
@@ -189,7 +203,7 @@ func (m *WidgetManager) RegisterDefault() {
 		"countdown",
 		"Displays a countdown to a specific date and time.",
 		Opts{
-			"event": NewOpt("Next Go Release", "The name of the event being counted down to."),
+			"event": NewOpt("A cool thing", "The name of the event being counted down to."),
 			"to":    NewOpt("2026-02-10T09:00:00", "The target date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss)."),
 		},
 		nil,
@@ -200,7 +214,7 @@ func (m *WidgetManager) RegisterDefault() {
 		"binary",
 		"A clock for those who think in 0s and 1s.",
 		Opts{
-			"separator": NewOpt(" : ", "The character(s) used to separate the binary hours, minutes, and seconds."),
+			"rule": NewOpt(" : ", "The character(s) used to separate the binary hours, minutes, and seconds."),
 		},
 		nil,
 	)

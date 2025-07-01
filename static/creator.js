@@ -61,7 +61,7 @@
 		</div>`;
 	}
 
-	function opt(name, def) {
+	function opt(name, def, description) {
 		let field;
 
 		if (name in KnownOptions) {
@@ -71,9 +71,12 @@
 		}
 
 		return `<div class="option">
-			<label for="opt_${name}">${ucfirst(name)}</label>
-			${field}
-			<button class="undo square" title="Reset value to default.">✖</button>
+			<div class="inner">
+				<label for="opt_${name}">${ucfirst(name)}</label>
+				${field}
+				<button class="undo square" title="Reset value to default.">✖</button>
+			</div>
+			<div class="description">${description}</div>
 		</div>`;
 	}
 
@@ -94,7 +97,7 @@
 
 			options[name] = def;
 
-			html += opt(name, def);
+			html += opt(name, def, option.description);
 		}
 
 		html += `</div><iframe id="preview" src=""></iframe>`;

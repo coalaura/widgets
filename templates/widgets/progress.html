@@ -1,27 +1,46 @@
 <style>
 	#progress {
-		--amount: 20%;
-
 		position: relative;
 		padding: 0.15rem;
 		border-radius: 0.25rem;
-		text-align: center;
 		width: 100%;
+		height: 1.3rem;
 	}
 
-	#progress::before {
-		content: '';
+	#progress .bar {
+		--amount: 20%;
+
 		position: absolute;
 		top: 0;
 		left: 0;
 		bottom: 0;
 		width: var(--amount);
 		background: {{ .bg }};
-		z-index: -1;
+		overflow: hidden;
+	}
+
+	#progress .top,
+	#progress .bottom {
+		--offset: 0%;
+
+		position: absolute;
+		top: 50%;
+		left: calc(var(--offset) + 50%);
+		transform: translate(-50%, -50%);
+	}
+
+	#progress .top {
+		color: black;
 	}
 </style>
 
-<div id="progress" class="value"></div>
+<div id="progress" class="value">
+	<span class="bottom"></span>
+
+	<div class="bar">
+		<span class="top"></span>
+	</div>
+</div>
 
 <script>
 	const from = new Date("{{ .from }}"),
@@ -31,7 +50,61 @@
 	if (isNaN(to)) throw new Error("to is invalid");
 	if (from > to) throw new Error("from cannot be after to");
 
-	const $progress = document.getElementById("progress");
+	const $progress = document.getElementById("progress"),
+		$bar = $progress.querySelector(".bar"),
+		$top = $progress.querySelector(".top"),
+		$bottom = $progress.querySelector(".bottom");
+
+	function rgb2hsl(r, g, b) {
+		r /= 255;
+		g /= 255;
+		b /= 255;
+
+		const max = Math.max(r, g, b),
+			min = Math.min(r, g, b);
+
+		let h,
+			s,
+			l = (max + min) / 2;
+
+		if (max === min) {
+			h = s = 0;
+		} else {
+			const d = max - min;
+
+			s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+			switch (max) {
+				case r:
+					h = (g - b) / d + (g < b ? 6 : 0);
+					break;
+				case g:
+					h = (b - r) / d + 2;
+					break;
+				case b:
+					h = (r - g) / d + 4;
+					break;
+			}
+
+			h /= 6;
+		}
+
+		return [h, s, l];
+	}
+
+	function getContrastColor(color) {
+		const rgb = color.match(/\d+/g).map(Number),
+			hsl = rgb2hsl(rgb[0], rgb[1], rgb[2]);
+
+		const h = hsl[0],
+			s = hsl[1];
+
+		const l = hsl[2] < 0.5 ? 0.95 : 0.15;
+
+		return `hsl(${h * 360}, ${s * 100}%, ${l * 100}%)`;
+	}
+
+	$top.style.color = getContrastColor(getComputedStyle($bar).backgroundColor);
 
 	function tick() {
 		const now = new Date();
@@ -42,7 +115,10 @@
 
 		const rounded = Math.round(percentage);
 
-		$progress.textContent = rounded + "%";
-		$progress.style.setProperty("--amount", percentage + "%");
+		$top.textContent = rounded + "%";
+		$bottom.textContent = rounded + "%";
+
+		$top.style.setProperty("--offset", ((50 - (percentage / 2)) * (100 / percentage)) + "%");
+		$bar.style.setProperty("--amount", percentage.toFixed(4) + "%");
 	}
 </script>

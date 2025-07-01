@@ -4,6 +4,8 @@
 		<title>Widget</title>
 
 		<style>
+			@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
 			* {
 				box-sizing: border-box;
 			}
@@ -17,7 +19,7 @@
 				align-items: center;
 				justify-content: {{ .align }};
 				background: transparent;
-				font-family: {{ .font }}, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+				font-family: {{ .font }}, "JetBrains Mono", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 				font-size: {{ .size }};
 				color: {{ .color }};
 			}
@@ -39,7 +41,7 @@
 			if (typeof tick !== "undefined") {
 				tick();
 
-				setInterval(tick, 1000);
+				setInterval(tick, 200);
 			}
 		</script>
 	</body>
