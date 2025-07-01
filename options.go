@@ -200,6 +200,10 @@ func (o *OptionString) Value(input string) any {
 	}
 
 	if o.parse == nil {
+		if strings.TrimSpace(input) == "" {
+			return ""
+		}
+
 		return input
 	}
 
