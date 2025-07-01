@@ -22,7 +22,7 @@ var currencies = NewCurrencyStore()
 func init() {
 	currencies.Update()
 
-	ticker := time.NewTicker(30 * time.Minute)
+	ticker := time.NewTicker(10 * time.Minute)
 
 	go func() {
 		defer ticker.Stop()

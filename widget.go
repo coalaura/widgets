@@ -32,6 +32,7 @@ func NewWidget(name, description string, options Options, handler Handler, size 
 		options = make(Options)
 	}
 
+	options["fps"] = NewInt(10, "The FPS at which to refresh the widget at.")
 	options["font"] = NewString("JetBrains Mono", "The font family for the widget text. Accepts any valid CSS font-family value.")
 	options["size"] = NewSize("100%", "The font size of the widget text. Accepts any valid CSS font-size value.")
 	options["color"] = NewColor("#cad3f5", "The color of the widget text. Accepts any valid CSS color value.")
@@ -145,9 +146,10 @@ func (m *WidgetManager) RegisterDefault() {
 		"progress",
 		"Calculates and displays the elapsed time between two dates as a percentage, giving a visual sense of completion.",
 		Options{
-			"from": NewString("01-01-"+yearNow, "The start date of the progress period. Accepts any valid date/time format."),
-			"to":   NewString("12-31-"+yearNow, "The end date of the progress period. Accepts any valid date/time format."),
-			"bg":   NewColor("#b7bdf8", "The background color for the progress bar. Accepts any valid CSS color value."),
+			"from":  NewString("01-01-"+yearNow, "The start date of the progress period. Accepts any valid date/time format."),
+			"to":    NewString("12-31-"+yearNow, "The end date of the progress period. Accepts any valid date/time format."),
+			"bg":    NewColor("#b7bdf8", "The background color for the progress bar. Accepts any valid CSS color value."),
+			"round": NewInt(1, "The maximum decimal precision of the progress."),
 		},
 		nil,
 	)
@@ -167,7 +169,8 @@ func (m *WidgetManager) RegisterDefault() {
 		"age",
 		"Displays your current age as a floating-point number. For extra precision, you can add your time of birth.",
 		Options{
-			"date": NewString("01-01-"+yearAgo, "Your date of birth (optionally include time of birth for extra precision). Accepts any valid date/time format."),
+			"date":  NewString("01-01-"+yearAgo, "Your date of birth (optionally include time of birth for extra precision). Accepts any valid date/time format."),
+			"round": NewInt(7, "The maximum decimal precision of your age."),
 		},
 		nil,
 	)

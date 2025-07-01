@@ -113,7 +113,7 @@
 
 		percentage = Math.max(0, Math.min(100, percentage));
 
-		const rounded = Math.round(percentage);
+		const rounded = round(percentage, _.round);
 
 		$top.textContent = rounded + "%";
 		$bottom.textContent = rounded + "%";

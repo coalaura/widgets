@@ -13,6 +13,6 @@
 
 		const preciseAge = now.diff(dateObj, "year", true);
 
-		$age.textContent = `You are ${preciseAge.toFixed(7)}`;
+		$age.textContent = `You are ${round(preciseAge, _.round)}`;
 	}
 </script>

@@ -70,6 +70,10 @@
 					return match;
 				});
 			}
+
+			function round(val, decimals = 1) {
+				return val.toFixed(decimals).replace(/\.?0+$/, '');
+			}
 		</script>
 	</head>
 
@@ -80,7 +84,9 @@
 			if (typeof tick !== "undefined") {
 				tick();
 
-				setInterval(tick, 200);
+				const fps = 1000 / Math.min(Math.max({{ .fps }}, 1), 30);
+
+				setInterval(tick, Math.floor(fps));
 			}
 		</script>
 	</body>
