@@ -1,0 +1,27 @@
+<style>
+	#binary {
+		font-family: monospace;
+	}
+</style>
+
+<div id="binary" class="value"></div>
+
+<script>
+	const separator = "{{ .separator }}";
+
+	const $clock = document.getElementById("binary");
+
+	function asBinary(num, padding) {
+		return num.toString(2).padStart(padding, "0");
+	}
+
+	function tick() {
+		const now = new Date();
+
+		const hours = asBinary(now.getHours(), 5),
+			minutes = asBinary(now.getMinutes(), 6),
+			seconds = asBinary(now.getSeconds(), 6);
+
+		$clock.innerText = [hours, minutes, seconds].join(separator);
+	}
+</script>

@@ -21,10 +21,21 @@
 	}
 
 	// Functions
-	function build(name, options = {}) {
-		const query = new URLSearchParams(options).toString();
+	function build(widget, options = {}) {
+		const cleaned = {};
 
-		return `${window.location.origin}/${name}${query ? `?${query}` : ""}`;
+		for (const [key, value] of Object.entries(options)) {
+			const option = widget.options[key],
+				def = option.default;
+
+			if (value !== def) {
+				cleaned[key] = value;
+			}
+		}
+
+		const query = new URLSearchParams(cleaned).toString();
+
+		return `${window.location.origin}/${widget.name}${query ? `?${query}` : ""}`;
 	}
 
 	function ucfirst(name) {
@@ -78,7 +89,8 @@
 		</h1><div id="options">`;
 
 		for (const name in widget.options) {
-			const def = widget.options[name];
+			const option = widget.options[name],
+				def = option.default;
 
 			options[name] = def;
 
@@ -95,23 +107,27 @@
 
 		let timeout;
 
-		$export.addEventListener("click", async function() {
-			clearTimeout(timeout);
+		$export.addEventListener(
+			"click",
+			async function () {
+				clearTimeout(timeout);
 
-			try {
-				const url = build(widget.name, options);
+				try {
+					const url = build(widget, options);
 
-				await navigator.clipboard.writeText(url);
-			} catch {
-				return;
-			}
+					await navigator.clipboard.writeText(url);
+				} catch {
+					return;
+				}
 
-			this.classList.add("copied");
+				this.classList.add("copied");
 
-			timeout = setTimeout(() => {
-				this.classList.remove("copied");
-			}, 750);
-		}, false);
+				timeout = setTimeout(() => {
+					this.classList.remove("copied");
+				}, 750);
+			},
+			false
+		);
 
 		for (const $opt of $options) {
 			const $undo = $opt.querySelector(".undo"),
@@ -119,17 +135,26 @@
 
 			const name = $input.name;
 
-			$input.addEventListener("input", function() {
-				set($undo, name, this.value);
-			}, false);
+			$input.addEventListener(
+				"input",
+				function () {
+					set($undo, name, this.value);
+				},
+				false
+			);
 
-			$undo.addEventListener("click", function() {
-				const value = widget.options[name];
+			$undo.addEventListener(
+				"click",
+				function () {
+					const option = widget.options[name],
+						def = option.default;
 
-				$input.value = value;
+					$input.value = def;
 
-				set(this, name, value);
-			}, false);
+					set(this, name, def);
+				},
+				false
+			);
 		}
 
 		function update() {
@@ -143,7 +168,7 @@
 				}
 			}
 
-			const url = build(widget.name, clean);
+			const url = build(widget, clean);
 
 			if ($preview.src !== url) {
 				$preview.src = url;
@@ -151,7 +176,7 @@
 		}
 
 		function set($undo, name, value) {
-			if (widget.options[name] === value) {
+			if (widget.options[name].default === value) {
 				$undo.classList.remove("changed");
 			} else {
 				$undo.classList.add("changed");
@@ -169,7 +194,7 @@
 		let html = `<h1>Widgets</h1><div id="widgets">`;
 
 		for (const widget of Widgets) {
-			const url = build(widget.name, {
+			const url = build(widget, {
 				color: "#cad3f5",
 			});
 
@@ -190,13 +215,7 @@
 			const name = el.dataset.name,
 				widget = Widgets.find(w => w.name === name);
 
-			el.addEventListener(
-				"click",
-				() => {
-					show(widget);
-				},
-				false
-			);
+			el.addEventListener("click", () => show(widget), false);
 		});
 	}
 })();

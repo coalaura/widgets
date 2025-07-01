@@ -1,0 +1,31 @@
+<div id="countdown" class="value"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/duration.js" crossorigin="anonymous"></script>
+<script>
+	dayjs.extend(window.dayjs_plugin_duration);
+
+	const event = "{{ .event }}",
+		date = dayjs("{{ .to }}");
+
+	const $countdown = document.getElementById("countdown");
+
+	function tick() {
+		const now = dayjs();
+
+		if (now.isAfter(targetDate)) {
+			$countdown.innerText = `${event} has arrived!`;
+
+			return;
+		}
+
+		const duration = dayjs.duration(date.diff(now));
+
+		const days = Math.floor(duration.asDays()),
+			hours = duration.hours(),
+			minutes = duration.minutes(),
+			seconds = duration.seconds();
+
+		$countdown.innerText = `${eventName} in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+	}
+</script>

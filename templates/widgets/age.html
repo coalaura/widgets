@@ -1,0 +1,18 @@
+<div id="age" class="value"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" crossorigin="anonymous"></script>
+<script>
+	const birthday = "{{ .birthday }}",
+		time = "{{ .time }}";
+
+	const $age = document.getElementById("age");
+
+	function tick() {
+		const date = dayjs(time ? `${birthday} ${time}` : birthday),
+			now = dayjs();
+
+		const preciseAge = now.diff(date, "year", true);
+
+		$age.innerText = `You are ${preciseAge.toFixed(7)}`;
+	}
+</script>
