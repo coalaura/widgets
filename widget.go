@@ -128,7 +128,8 @@ func (m *WidgetManager) RegisterDefault() {
 		"ip",
 		"Shows your current IP address, optionally prefixed with custom text. Useful for network status or location info.",
 		Options{
-			"prefix": NewString("IP is ", "A string to display before the IP address. Can be left empty."),
+			"prefix":  NewString("IP is ", "A string to display before the IP address. Can be left empty."),
+			"spoiler": NewBool(false, "If the IP should be blurred until hovered over."),
 		},
 		func(c *fiber.Ctx, options map[string]any) {
 			ip := c.IP()
