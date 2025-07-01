@@ -23,3 +23,11 @@ func slice(values ...any) []string {
 
 	return result
 }
+
+func optional[T any](values []T) T {
+	if len(values) > 0 {
+		return values[0]
+	}
+
+	return *new(T)
+}

@@ -8,6 +8,7 @@
 
 			* {
 				box-sizing: border-box;
+				user-select: none;
 			}
 
 			html,
@@ -35,6 +36,8 @@
 			}
 
 			.value {
+				display: flex;
+  				align-items: center;
 				font-weight: {{ .weight }};
 				text-align: {{ .align }};
 			}

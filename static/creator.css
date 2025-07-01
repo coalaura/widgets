@@ -99,8 +99,16 @@ iframe {
 	height: 20rem;
 }
 
+.medium {
+	height: 16rem;
+}
+
 #widgets .big {
 	height: 12rem;
+}
+
+#widgets .medium {
+	height: 8rem;
 }
 
 #options {

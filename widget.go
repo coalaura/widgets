@@ -17,7 +17,7 @@ type Widget struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Options     Options `json:"options"`
-	IsBig       bool    `json:"is_big"`
+	Size        string  `json:"size,omitempty"`
 	Handler     Handler `json:"-"`
 }
 
@@ -27,7 +27,7 @@ type WidgetManager struct {
 	widgets map[string]*Widget
 }
 
-func NewWidget(name, description string, options Options, handler Handler, isBig bool) *Widget {
+func NewWidget(name, description string, options Options, handler Handler, size string) *Widget {
 	if options == nil {
 		options = make(Options)
 	}
@@ -42,7 +42,7 @@ func NewWidget(name, description string, options Options, handler Handler, isBig
 		Name:        name,
 		Description: description,
 		Options:     options,
-		IsBig:       isBig,
+		Size:        size,
 		Handler:     handler,
 	}
 }
@@ -67,11 +67,11 @@ func (w *Widget) Render(c *fiber.Ctx) error {
 	return c.Render("widgets/"+w.Name, opts, "layout")
 }
 
-func (m *WidgetManager) Register(name, description string, options Options, handler Handler, isBig ...bool) {
+func (m *WidgetManager) Register(name, description string, options Options, handler Handler, size ...string) {
 	m.Lock()
 	defer m.Unlock()
 
-	m.widgets[name] = NewWidget(name, description, options, handler, len(isBig) > 0 && isBig[0])
+	m.widgets[name] = NewWidget(name, description, options, handler, optional(size))
 }
 
 func (m *WidgetManager) Get(name string) *Widget {
@@ -238,6 +238,17 @@ func (m *WidgetManager) RegisterDefault() {
 		func(c *fiber.Ctx, options map[string]any) {
 			options["apod"] = nasa.GetAPOD()
 		},
-		true,
+		"big",
+	)
+
+	// Random garfield comic
+	m.Register(
+		"garfield",
+		"Displays a random garfield comic.",
+		Options{
+			"hd": NewBool(true, "Display a higher quality, upscaled version."),
+		},
+		nil,
+		"medium",
 	)
 }

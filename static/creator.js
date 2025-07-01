@@ -109,7 +109,7 @@
 			html += opt(name, option);
 		}
 
-		html += `</div><iframe id="preview" class="${widget.is_big ? "big" : ""}" src=""></iframe>`;
+		html += `</div><iframe id="preview" class="${widget.size || ""}" src=""></iframe>`;
 
 		$page.innerHTML = html + footer();
 
@@ -228,7 +228,7 @@
 					<div class="name">${ucfirst(widget.name)}</div>
 					<div class="description">${widget.description}</div>
 				</div>
-				<iframe src="${url}" class="${widget.is_big ? "big" : ""}"></iframe>
+				<iframe src="${url}" class="${widget.size || ""}"></iframe>
 			</div>`;
 		}
 
