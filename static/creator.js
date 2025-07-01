@@ -221,4 +221,20 @@
 			el.addEventListener("click", () => show(widget), false);
 		});
 	}
+
+	window.addEventListener("popstate", () => {
+		if (window.location.hash) {
+			const widget = Widgets.find(w => w.name === window.location.hash.substring(1));
+
+			if (widget) {
+				show(widget);
+			} else {
+				window.location.hash = "";
+			}
+
+			return;
+		}
+
+		render();
+	});
 })();
