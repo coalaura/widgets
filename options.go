@@ -35,6 +35,11 @@ type OptionFloat struct {
 	def float64
 }
 
+type OptionBool struct {
+	BaseOption
+	def bool
+}
+
 type OptionString struct {
 	BaseOption
 	def   string
@@ -57,6 +62,13 @@ func NewInt(def int, description string) Option {
 func NewFloat(def float64, description string) Option {
 	return &OptionFloat{
 		BaseOption: BaseOption{"number", description},
+		def:        def,
+	}
+}
+
+func NewBool(def bool, description string) Option {
+	return &OptionBool{
+		BaseOption: BaseOption{"toggle", description},
 		def:        def,
 	}
 }
@@ -132,6 +144,10 @@ func (o *OptionFloat) Default() any {
 	return o.def
 }
 
+func (o *OptionBool) Default() any {
+	return o.def
+}
+
 func (o *OptionString) Default() any {
 	return o.def
 }
@@ -145,6 +161,10 @@ func (o *BaseOption) Description() string {
 }
 
 func (o *OptionInt) Value(input string) any {
+	if input == "" {
+		return o.def
+	}
+
 	if value, err := strconv.ParseInt(input, 10, 64); err == nil {
 		return int(value)
 	}
@@ -153,11 +173,25 @@ func (o *OptionInt) Value(input string) any {
 }
 
 func (o *OptionFloat) Value(input string) any {
+	if input == "" {
+		return o.def
+	}
+
 	if value, err := strconv.ParseFloat(input, 64); err == nil {
 		return value
 	}
 
 	return o.def
+}
+
+func (o *OptionBool) Value(input string) any {
+	if input == "" {
+		return o.def
+	}
+
+	input = strings.ToLower(input)
+
+	return input == "1" || input == "ok" || input == "true"
 }
 
 func (o *OptionString) Value(input string) any {

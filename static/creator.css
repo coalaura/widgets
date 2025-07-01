@@ -27,6 +27,10 @@ body {
 	padding: 20px;
 	background: #24273a;
 	border-radius: 6px;
+	max-height: 95%;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 h1 {
@@ -43,6 +47,8 @@ h1 {
 #widgets {
 	display: flex;
 	flex-direction: column;
+	height: 100%;
+	overflow-y: auto;
 }
 
 .widget {
@@ -87,6 +93,14 @@ iframe {
 
 .widget:hover iframe {
 	background: #24273a;
+}
+
+.big {
+	height: 20rem;
+}
+
+#widgets .big {
+	height: 12rem;
 }
 
 #options {

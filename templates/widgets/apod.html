@@ -1,0 +1,23 @@
+<style>
+	#apod {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	img {
+		height: 100%;
+	}
+</style>
+
+<div id="apod" class="value">
+	{{ if eq .title "top" }}
+		<div class="subtitle">{{ .apod.Title }}</div>
+	{{ end }}
+
+	<img src="{{ .apod.HdUrl }}" style="object-fit: {{ .fit }}" alt="{{ .apod.Title }}" />
+
+	{{ if eq .title "bottom" }}
+		<div class="subtitle">{{ .apod.Title }}</div>
+	{{ end }}
+</div>

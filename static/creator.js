@@ -50,6 +50,13 @@
 		return `<select name="${name}" id="opt_${name}">${opts}</select>`;
 	}
 
+	function toggle(name, active) {
+		return `<select name="${name}" id="opt_${name}">
+			<option value="1" ${active ? "selected" : ""}>On</option>
+			<option value="0" ${!active ? "selected" : ""}>Off</option>
+		</select>`;
+	}
+
 	function footer() {
 		const end = new Date().getFullYear().toString();
 
@@ -60,8 +67,17 @@
 	}
 
 	function opt(name, option) {
-		const { type, default: def, description, allowed } = option,
-			field = type === "select" ? select(name, def, allowed) : input(type, name, def);
+		const { type, default: def, description, allowed } = option;
+
+		let field;
+
+		if (type === "toggle") {
+			field = toggle(name, def);
+		} else if (type === "select") {
+			field = select(name, def, allowed);
+		} else {
+			field = input(type, name, def);
+		}
 
 		return `<div class="option">
 			<div class="inner">
@@ -93,7 +109,7 @@
 			html += opt(name, option);
 		}
 
-		html += `</div><iframe id="preview" src=""></iframe>`;
+		html += `</div><iframe id="preview" class="${widget.is_big ? "big" : ""}" src=""></iframe>`;
 
 		$page.innerHTML = html + footer();
 
@@ -171,8 +187,21 @@
 			}
 		}
 
+		function normalize(option, value) {
+			switch (option.type) {
+				case "number":
+					return Number(value);
+				case "toggle":
+					return value === true || String(value) === "1";
+			}
+
+			return String(value);
+		}
+
 		function set($undo, name, value) {
-			if (String(widget.options[name].default) === String(value)) {
+			const option = widget.options[name];
+
+			if (normalize(option, option.default) === normalize(option, value)) {
 				$undo.classList.remove("changed");
 			} else {
 				$undo.classList.add("changed");
@@ -199,7 +228,7 @@
 					<div class="name">${ucfirst(widget.name)}</div>
 					<div class="description">${widget.description}</div>
 				</div>
-				<iframe src="${url}"></iframe>
+				<iframe src="${url}" class="${widget.is_big ? "big" : ""}"></iframe>
 			</div>`;
 		}
 

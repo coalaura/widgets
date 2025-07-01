@@ -1,0 +1,11 @@
+<textarea id="scratchpad" class="value pre" spellcheck="false" placeholder="{{ .place }}"></textarea>
+
+<script>
+	const $scratchpad = document.getElementById("scratchpad");
+
+	$scratchpad.innerText = localStorage.getItem("scratchpad") || "";
+
+	$scratchpad.addEventListener("input", () => {
+		localStorage.setItem("scratchpad", $scratchpad.value);
+	});
+</script>

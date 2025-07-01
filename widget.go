@@ -17,6 +17,7 @@ type Widget struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Options     Options `json:"options"`
+	IsBig       bool    `json:"is_big"`
 	Handler     Handler `json:"-"`
 }
 
@@ -26,7 +27,7 @@ type WidgetManager struct {
 	widgets map[string]*Widget
 }
 
-func NewWidget(name, description string, options Options, handler Handler) *Widget {
+func NewWidget(name, description string, options Options, handler Handler, isBig bool) *Widget {
 	if options == nil {
 		options = make(Options)
 	}
@@ -41,6 +42,7 @@ func NewWidget(name, description string, options Options, handler Handler) *Widg
 		Name:        name,
 		Description: description,
 		Options:     options,
+		IsBig:       isBig,
 		Handler:     handler,
 	}
 }
@@ -65,11 +67,11 @@ func (w *Widget) Render(c *fiber.Ctx) error {
 	return c.Render("widgets/"+w.Name, opts, "layout")
 }
 
-func (m *WidgetManager) Register(name, description string, options Options, handler Handler) {
+func (m *WidgetManager) Register(name, description string, options Options, handler Handler, isBig ...bool) {
 	m.Lock()
 	defer m.Unlock()
 
-	m.widgets[name] = NewWidget(name, description, options, handler)
+	m.widgets[name] = NewWidget(name, description, options, handler, len(isBig) > 0 && isBig[0])
 }
 
 func (m *WidgetManager) Get(name string) *Widget {
@@ -213,5 +215,29 @@ func (m *WidgetManager) RegisterDefault() {
 
 			options["rate"] = strconv.FormatFloat(rate, 'f', round, 64)
 		},
+	)
+
+	// Simple scratchpad widget
+	m.Register(
+		"scratchpad",
+		"A simple text area to jot down notes. Content is saved locally in your browser.",
+		Options{
+			"place": NewString("Jot something down...", "The placeholder text to show when the note is empty."),
+		},
+		nil,
+	)
+
+	// NASA Picture of the Day widget
+	m.Register(
+		"apod",
+		"Displays NASA's Astronomy Picture of the Day.",
+		Options{
+			"title": NewEnum("off", slice("top", "bottom", "off"), "Where to display the image's title."),
+			"fit":   NewEnum("cover", slice("cover", "contain", "fill"), "How to fit the image into its container."),
+		},
+		func(c *fiber.Ctx, options map[string]any) {
+			options["apod"] = nasa.GetAPOD()
+		},
+		true,
 	)
 }
