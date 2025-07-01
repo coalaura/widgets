@@ -2,8 +2,6 @@
 	const Widgets = await fetch("/widgets.json").then(response => response.json()),
 		KnownOptions = {
 			color: def => input("color", "color", def),
-			align: def => select("align", def, ["left", "center", "right"]),
-			weight: def => select("weight", def, ["100", "200", "300", "400", "500", "600", "700", "800", "900"]),
 		};
 
 	const $page = document.getElementById("page");
@@ -61,14 +59,9 @@
 		</div>`;
 	}
 
-	function opt(name, def, description) {
-		let field;
-
-		if (name in KnownOptions) {
-			field = KnownOptions[name](def);
-		} else {
-			field = input("text", name, def);
-		}
+	function opt(name, option) {
+		const { type, default: def, description, allowed } = option,
+			field = type === "select" ? select(name, def, allowed) : input(type, name, def);
 
 		return `<div class="option">
 			<div class="inner">
@@ -97,7 +90,7 @@
 
 			options[name] = def;
 
-			html += opt(name, def, option.description);
+			html += opt(name, option);
 		}
 
 		html += `</div><iframe id="preview" src=""></iframe>`;
@@ -179,7 +172,7 @@
 		}
 
 		function set($undo, name, value) {
-			if (widget.options[name].default === value) {
+			if (String(widget.options[name].default) === String(value)) {
 				$undo.classList.remove("changed");
 			} else {
 				$undo.classList.add("changed");

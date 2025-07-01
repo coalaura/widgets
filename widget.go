@@ -4,25 +4,19 @@ import (
 	"encoding/json"
 	"math/rand"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-type Opts map[string]*Opt
-
-type Handler func(*fiber.Ctx, map[string]string)
-
-type Opt struct {
-	Default     string `json:"default"`
-	Description string `json:"description"`
-}
+type Handler func(*fiber.Ctx, map[string]any)
 
 type Widget struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
-	Options     Opts    `json:"options"`
+	Options     Options `json:"options"`
 	Handler     Handler `json:"-"`
 }
 
@@ -32,23 +26,16 @@ type WidgetManager struct {
 	widgets map[string]*Widget
 }
 
-func NewOpt(def, description string) *Opt {
-	return &Opt{
-		Default:     def,
-		Description: description,
-	}
-}
-
-func NewWidget(name, description string, options Opts, handler Handler) *Widget {
+func NewWidget(name, description string, options Options, handler Handler) *Widget {
 	if options == nil {
-		options = make(Opts)
+		options = make(Options)
 	}
 
-	options.RegisterDefault("font", "JetBrains Mono", "The font family for the widget text. Accepts any valid CSS font-family value.")
-	options.RegisterDefault("size", "100%", "The font size of the widget text. Accepts any valid CSS font-size value.")
-	options.RegisterDefault("color", "#cad3f5", "The color of the widget text. Accepts any valid CSS color value.")
-	options.RegisterDefault("weight", "700", "The font weight of the widget text. Accepts CSS font-weight numeric values (100-900).")
-	options.RegisterDefault("align", "left", "The horizontal alignment of the widget text. Accepts 'left', 'center' or 'right'.")
+	options["font"] = NewString("JetBrains Mono", "The font family for the widget text. Accepts any valid CSS font-family value.")
+	options["size"] = NewSize("100%", "The font size of the widget text. Accepts any valid CSS font-size value.")
+	options["color"] = NewColor("#cad3f5", "The color of the widget text. Accepts any valid CSS color value.")
+	options["weight"] = NewEnum("700", slice(100, 200, 300, 400, 500, 600, 700, 800, 900), "The font weight of the widget text. Accepts CSS font-weight numeric values (100-900).")
+	options["align"] = NewEnum("left", slice("left", "center", "right"), "The horizontal alignment of the widget text. Accepts 'left', 'center' or 'right'.")
 
 	return &Widget{
 		Name:        name,
@@ -64,25 +51,11 @@ func NewWidgetManager() *WidgetManager {
 	}
 }
 
-func (o *Opts) RegisterDefault(name, def, description string) {
-	if _, ok := (*o)[name]; ok {
-		return
-	}
-
-	(*o)[name] = NewOpt(def, description)
-}
-
 func (w *Widget) Render(c *fiber.Ctx) error {
-	opts := make(map[string]string)
+	opts := make(map[string]any)
 
 	for key, opt := range w.Options {
-		value := c.Query(key)
-
-		if value == "" {
-			value = opt.Default
-		}
-
-		opts[key] = value
+		opts[key] = opt.Value(c.Query(key))
 	}
 
 	if w.Handler != nil {
@@ -92,7 +65,7 @@ func (w *Widget) Render(c *fiber.Ctx) error {
 	return c.Render("widgets/"+w.Name, opts, "layout")
 }
 
-func (m *WidgetManager) Register(name, description string, options Opts, handler Handler) {
+func (m *WidgetManager) Register(name, description string, options Options, handler Handler) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -151,10 +124,10 @@ func (m *WidgetManager) RegisterDefault() {
 	m.Register(
 		"ip",
 		"Shows your current IP address, optionally prefixed with custom text. Useful for network status or location info.",
-		Opts{
-			"prefix": NewOpt("IP is ", "A string to display before the IP address. Can be left empty."),
+		Options{
+			"prefix": NewString("IP is ", "A string to display before the IP address. Can be left empty."),
 		},
-		func(c *fiber.Ctx, options map[string]string) {
+		func(c *fiber.Ctx, options map[string]any) {
 			ip := c.IP()
 
 			if ip == "" {
@@ -169,10 +142,10 @@ func (m *WidgetManager) RegisterDefault() {
 	m.Register(
 		"progress",
 		"Calculates and displays the elapsed time between two dates as a percentage, giving a visual sense of completion.",
-		Opts{
-			"from": NewOpt("01-01-"+yearNow, "The start date of the progress period. Format: DD-MM-YYYY."),
-			"to":   NewOpt("12-31-"+yearNow, "The end date of the progress period. Format: DD-MM-YYYY."),
-			"bg":   NewOpt("#b7bdf8", "The background color for the progress bar. Accepts any valid CSS color value."),
+		Options{
+			"from": NewString("01-01-"+yearNow, "The start date of the progress period. Accepts any valid date/time format."),
+			"to":   NewString("12-31-"+yearNow, "The end date of the progress period. Accepts any valid date/time format."),
+			"bg":   NewColor("#b7bdf8", "The background color for the progress bar. Accepts any valid CSS color value."),
 		},
 		nil,
 	)
@@ -181,8 +154,8 @@ func (m *WidgetManager) RegisterDefault() {
 	m.Register(
 		"date",
 		"Displays the current date/time in a specified format (using dayjs). Handy for quick references or scheduling.",
-		Opts{
-			"format": NewOpt("DD/MM/YYYY", "The display format for the date/time, using dayjs.js tokens. Example: 'dddd, MMMM D, h:mm A'."),
+		Options{
+			"format": NewString("dddd, MMMM D, h:mm A", "The display format for the date/time, using dayjs.js tokens. Accepts any valid date/time format supported by day.js."),
 		},
 		nil,
 	)
@@ -191,9 +164,8 @@ func (m *WidgetManager) RegisterDefault() {
 	m.Register(
 		"age",
 		"Displays your current age as a floating-point number. For extra precision, you can add your time of birth.",
-		Opts{
-			"birthday": NewOpt("01-01-"+yearAgo, "Your date of birth. Required. Format: YYYY-MM-DD."),
-			"time":     NewOpt("", "Your time of birth for extra precision. Optional. Format: HH:mm:ss."),
+		Options{
+			"date": NewString("01-01-"+yearAgo, "Your date of birth (optionally include time of birth for extra precision). Accepts any valid date/time format."),
 		},
 		nil,
 	)
@@ -202,9 +174,9 @@ func (m *WidgetManager) RegisterDefault() {
 	m.Register(
 		"countdown",
 		"Displays a countdown to a specific date and time.",
-		Opts{
-			"event": NewOpt("A cool thing", "The name of the event being counted down to."),
-			"to":    NewOpt("2026-02-10T09:00:00", "The target date and time in ISO 8601 format (YYYY-MM-DDTHH:mm:ss)."),
+		Options{
+			"event": NewString("A cool thing", "The name of the event being counted down to."),
+			"to":    NewString("2026-02-10T09:00:00", "The target date of the event. Accepts any valid date/time format."),
 		},
 		nil,
 	)
@@ -213,9 +185,33 @@ func (m *WidgetManager) RegisterDefault() {
 	m.Register(
 		"binary",
 		"A clock for those who think in 0s and 1s.",
-		Opts{
-			"rule": NewOpt(" : ", "The character(s) used to separate the binary hours, minutes, and seconds."),
+		Options{
+			"rule": NewString(" : ", "The character(s) used to separate the binary hours, minutes, and seconds."),
 		},
 		nil,
+	)
+
+	// Currency conversion widget
+	m.Register(
+		"currency",
+		"Converts an amount from one currency to another using up-to-date exchange rates.",
+		Options{
+			"from":   NewEnum("EUR", currencies.Enum(), "The currency code to convert from. Accepts any valid (and supported) 3 letter currency code."),
+			"to":     NewEnum("USD", currencies.Enum(), "The currency code to convert to. Accepts any valid (and supported) 3 letter currency code."),
+			"round":  NewInt(3, "The maximum decimal precision of the conversion."),
+			"amount": NewFloat(1.0, "The amount of the 'from' currency to convert."),
+			"format": NewString("{amount} {from} = {rate} {to}", "How to format the resulting conversion rate."),
+		},
+		func(c *fiber.Ctx, options map[string]any) {
+			from := options["from"].(string)
+			to := options["to"].(string)
+
+			round := options["round"].(int)
+			amount := options["amount"].(float64)
+
+			rate := currencies.CalculateRate(from, to) * amount
+
+			options["rate"] = strconv.FormatFloat(rate, 'f', round, 64)
+		},
 	)
 }

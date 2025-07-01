@@ -137,6 +137,11 @@ input {
 	height: 30px;
 }
 
+input[type="number"] {
+	appearance: textfield;
+	-webkit-appearance: textfield;
+}
+
 input[type="color"] {
 	padding: 0;
 }

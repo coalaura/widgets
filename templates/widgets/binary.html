@@ -1,8 +1,6 @@
-<div id="binary" class="value"></div>
+<div id="binary" class="value pre"></div>
 
 <script>
-	const rule = "{{ .rule }}";
-
 	const $clock = document.getElementById("binary");
 
 	function asBinary(num, padding) {
@@ -16,6 +14,6 @@
 			minutes = asBinary(now.getMinutes(), 6),
 			seconds = asBinary(now.getSeconds(), 6);
 
-		$clock.innerText = [hours, minutes, seconds].join(rule);
+		$clock.textContent = [hours, minutes, seconds].join(_.rule);
 	}
 </script>

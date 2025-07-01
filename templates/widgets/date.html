@@ -2,11 +2,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" crossorigin="anonymous"></script>
 <script>
-	const format = "{{ .format }}";
-
 	const $date = document.getElementById("date");
 
 	function tick() {
-		$date.innerText = dayjs().format(format);
+		$date.innerText = dayjs().format(_.format);
 	}
 </script>

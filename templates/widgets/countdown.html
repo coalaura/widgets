@@ -1,12 +1,11 @@
-<div id="countdown" class="value"></div>
+<div id="countdown" class="value pre"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/duration.js" crossorigin="anonymous"></script>
 <script>
 	dayjs.extend(window.dayjs_plugin_duration);
 
-	const event = "{{ .event }}",
-		date = dayjs("{{ .to }}");
+	const date = dayjs(_.to);
 
 	const $countdown = document.getElementById("countdown");
 
@@ -20,7 +19,7 @@
 		const now = dayjs();
 
 		if (now.isAfter(date)) {
-			$countdown.innerText = `${event} has arrived!`;
+			$countdown.innerText = `${_.event} has arrived!`;
 
 			return;
 		}
@@ -50,6 +49,6 @@
 			output = formatUnit(seconds, "second");
 		}
 
-		$countdown.innerText = `${event} in: ${output.trim()}`;
+		$countdown.textContent = `${_.event} in: ${output.trim()}`;
 	}
 </script>

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/coalaura/logger"
-	adapter "github.com/coalaura/logger/fiber"
+	adapter "github.com/coalaura/logger/fiber2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/template/html/v2"
@@ -22,7 +22,7 @@ func main() {
 	})
 
 	app.Use(recover.New())
-	app.Use(adapter.FiberMiddleware(log))
+	app.Use(adapter.Middleware(log))
 
 	app.Static("/", "./static")
 

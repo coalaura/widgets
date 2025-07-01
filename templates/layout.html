@@ -19,19 +19,34 @@
 				align-items: center;
 				justify-content: {{ .align }};
 				background: transparent;
-				font-family: {{ .font }}, "JetBrains Mono", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+				font-family: {{ .font | js }}, "JetBrains Mono", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 				font-size: {{ .size }};
 				color: {{ .color }};
 			}
 
 			.value {
-				font-weight: {{ .weight }}
+				font-weight: {{ .weight }};
+				text-align: {{ .align }};
 			}
 
 			.pre {
 				white-space: pre;
 			}
 		</style>
+
+		<script>
+			const _ = {{ . }};
+
+			function format() {
+				return _.format.replace(/\{\s*(\w+)\s*}/g, (match, key) => {
+					if (key in _) {
+						return _[key];
+					}
+
+					return match;
+				});
+			}
+		</script>
 	</head>
 
 	<body class="wrapper">

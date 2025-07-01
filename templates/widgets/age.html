@@ -2,17 +2,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" crossorigin="anonymous"></script>
 <script>
-	const birthday = "{{ .birthday }}",
-		time = "{{ .time }}";
+	const date = _.date,
+		time = _.time;
 
 	const $age = document.getElementById("age");
 
 	function tick() {
-		const date = dayjs(time ? `${birthday} ${time}` : birthday),
+		const dateObj = dayjs(_.date + (_.time ? ` ${_.time}` : "")),
 			now = dayjs();
 
-		const preciseAge = now.diff(date, "year", true);
+		const preciseAge = now.diff(dateObj, "year", true);
 
-		$age.innerText = `You are ${preciseAge.toFixed(7)}`;
+		$age.textContent = `You are ${preciseAge.toFixed(7)}`;
 	}
 </script>
