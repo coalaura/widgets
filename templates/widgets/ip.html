@@ -4,20 +4,13 @@
 		user-select: text;
 	}
 
-	.spoiler::before {
-		content: "";
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
+	.spoiler {
+		filter: blur(0.25rem);
 		transition: 250ms;
-		backdrop-filter: blur(0.25rem);
 	}
 
-	.spoiler:hover::before {
-		backdrop-filter: blur(0rem);
-		pointer-events: none;
+	.spoiler:hover {
+		filter: blur(0rem);
 	}
 </style>
 
