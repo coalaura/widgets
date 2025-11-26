@@ -1,8 +1,7 @@
 package main
 
 import (
-	"github.com/coalaura/logger"
-	adapter "github.com/coalaura/logger/fiber2"
+	"github.com/coalaura/plain"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/template/html/v2"
@@ -10,7 +9,7 @@ import (
 
 var (
 	manager = NewWidgetManager()
-	log     = logger.New()
+	log     = plain.New(plain.WithDate(plain.RFC3339Local))
 )
 
 func main() {
@@ -22,7 +21,7 @@ func main() {
 	})
 
 	app.Use(recover.New())
-	app.Use(adapter.Middleware(log))
+	app.Use(log.Middleware())
 
 	app.Static("/", "./static")
 
@@ -38,6 +37,6 @@ func main() {
 		return manager.Render(c, name)
 	})
 
-	log.Info("Listening on http://localhost:4777/")
-	log.MustPanic(app.Listen(":4777"))
+	log.Println("Listening on http://localhost:4777/")
+	log.MustFail(app.Listen(":4777"))
 }

@@ -50,7 +50,7 @@ func (n *NasaStore) GetAPOD() NasaApod {
 func (n *NasaStore) UpdateAPOD() {
 	resp, err := http.Get(fmt.Sprintf("https://api.nasa.gov/planetary/apod?api_key=%s", NasaAPIKey))
 	if err != nil {
-		log.Warningf("unable to query api.nasa.gov: %v\n", err)
+		log.Warnf("unable to query api.nasa.gov: %v\n", err)
 
 		return
 	}
@@ -60,7 +60,7 @@ func (n *NasaStore) UpdateAPOD() {
 	var result NasaApod
 
 	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		log.Warningf("unable to decode api.nasa.gov: %v\n", err)
+		log.Warnf("unable to decode api.nasa.gov: %v\n", err)
 
 		return
 	}

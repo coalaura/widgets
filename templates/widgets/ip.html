@@ -14,4 +14,13 @@
 	}
 </style>
 
-<div class="value pre {{ if .spoiler }}spoiler{{ end }}">{{ .prefix }}{{ .ip }}</div>
+<div class="value pre {{ if .spoiler }}spoiler{{ end }}">{{ .prefix }}<span id="ip"></span></div>
+
+<script>
+	const $ip = document.getElementById("ip");
+
+	fetch("https://ip.shrt.day/")
+		.then(response => response.text())
+		.then(ip => $ip.innerText = ip)
+		.catch(console.error);
+</script>

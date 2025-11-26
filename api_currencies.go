@@ -97,7 +97,7 @@ func (c *CurrencyStore) CalculateRate(from, to string) float64 {
 func (c *CurrencyStore) Update() {
 	resp, err := http.Get("https://api.frankfurter.dev/v1/latest")
 	if err != nil {
-		log.Warningf("unable to query frankfurter.dev: %v\n", err)
+		log.Warnf("unable to query frankfurter.dev: %v\n", err)
 
 		return
 	}
@@ -107,7 +107,7 @@ func (c *CurrencyStore) Update() {
 	var result CurrencyStore
 
 	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		log.Warningf("unable to decode frankfurter.dev: %v\n", err)
+		log.Warnf("unable to decode frankfurter.dev: %v\n", err)
 
 		return
 	}
