@@ -3,15 +3,14 @@ package main
 import (
 	"encoding/json"
 	"math/rand"
+	"net/http"
 	"sort"
 	"strconv"
 	"sync"
 	"time"
-
-	"github.com/gofiber/fiber/v2"
 )
 
-type Handler func(*fiber.Ctx, map[string]any)
+type Handler func(http.ResponseWriter, *http.Request, map[string]any)
 
 type Widget struct {
 	Name        string  `json:"name"`
@@ -54,18 +53,27 @@ func NewWidgetManager() *WidgetManager {
 	}
 }
 
-func (w *Widget) Render(c *fiber.Ctx) error {
+func (w *Widget) Render(rw http.ResponseWriter, r *http.Request) error {
+	tmpl, ok := templates[w.Name]
+	if !ok {
+		http.Error(rw, "Widget template not found", 500)
+
+		return nil
+	}
+
+	query := r.URL.Query()
+
 	opts := make(map[string]any)
 
 	for key, opt := range w.Options {
-		opts[key] = opt.Value(c.Query(key))
+		opts[key] = opt.Value(query.Get(key))
 	}
 
 	if w.Handler != nil {
-		w.Handler(c, opts)
+		w.Handler(rw, r, opts)
 	}
 
-	return c.Render("widgets/"+w.Name, opts, "layout")
+	return tmpl.ExecuteTemplate(rw, "layout.html", opts)
 }
 
 func (m *WidgetManager) Register(name, description string, options Options, handler Handler, size ...string) {
@@ -107,13 +115,15 @@ func (m *WidgetManager) JSON() []byte {
 	return m.json
 }
 
-func (m *WidgetManager) Render(c *fiber.Ctx, name string) error {
+func (m *WidgetManager) Render(rw http.ResponseWriter, r *http.Request, name string) error {
 	wg := m.Get(name)
 	if wg == nil {
-		return abort(c, 404)
+		http.Error(rw, "Widget not found", http.StatusNotFound)
+
+		return nil
 	}
 
-	return wg.Render(c)
+	return wg.Render(rw, r)
 }
 
 func (m *WidgetManager) RegisterDefault() {
@@ -200,7 +210,7 @@ func (m *WidgetManager) RegisterDefault() {
 			"amount": NewFloat(1.0, "The amount of the 'from' currency to convert."),
 			"format": NewString("{amount} {from} = {rate} {to}", "How to format the resulting conversion rate."),
 		},
-		func(c *fiber.Ctx, options map[string]any) {
+		func(_ http.ResponseWriter, _ *http.Request, options map[string]any) {
 			from := options["from"].(string)
 			to := options["to"].(string)
 
@@ -231,7 +241,7 @@ func (m *WidgetManager) RegisterDefault() {
 			"title": NewEnum("off", slice("top", "bottom", "off"), "Where to display the image's title."),
 			"fit":   NewEnum("cover", slice("cover", "contain", "fill"), "How to fit the image into its container."),
 		},
-		func(c *fiber.Ctx, options map[string]any) {
+		func(_ http.ResponseWriter, _ *http.Request, options map[string]any) {
 			options["apod"] = nasa.GetAPOD()
 		},
 		"big",

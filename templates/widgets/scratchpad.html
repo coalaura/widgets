@@ -1,3 +1,4 @@
+{{ define "content" }}
 <textarea id="scratchpad" class="value pre" spellcheck="false" placeholder="{{ .place }}"></textarea>
 
 <script>
@@ -9,3 +10,4 @@
 		localStorage.setItem("scratchpad", $scratchpad.value);
 	});
 </script>
+{{ end }}

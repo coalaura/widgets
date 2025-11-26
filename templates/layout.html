@@ -60,7 +60,7 @@
 		</style>
 
 		<script>
-			const _ = {{ . }};
+			const _ = {{ . | json }};
 
 			function format() {
 				return _.format.replace(/\{\s*(\w+)\s*}/g, (match, key) => {
@@ -79,7 +79,7 @@
 	</head>
 
 	<body class="wrapper">
-		{{ embed }}
+		{{ block "content" . }}{{ end }}
 
 		<script>
 			if (typeof tick !== "undefined") {

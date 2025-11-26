@@ -4,8 +4,8 @@ go 1.25.4
 
 require (
 	github.com/coalaura/plain v1.0.1
+	github.com/go-chi/chi/v5 v5.2.3
 	github.com/gofiber/fiber/v2 v2.52.10
-	github.com/gofiber/template/html/v2 v2.1.3
 	github.com/mazznoer/csscolorparser v0.1.6
 )
 
@@ -15,8 +15,6 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/containerd/console v1.0.5 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/gofiber/template v1.8.3 // indirect
-	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect

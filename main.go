@@ -1,10 +1,11 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/coalaura/plain"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/template/html/v2"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 var (
@@ -15,28 +16,26 @@ var (
 func main() {
 	manager.RegisterDefault()
 
-	app := fiber.New(fiber.Config{
-		ProxyHeader: fiber.HeaderXForwardedFor,
-		Views:       html.New("./templates", ".html"),
+	r := chi.NewRouter()
+
+	r.Use(middleware.Recoverer)
+	r.Use(log.Middleware())
+
+	r.Get("/widgets.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		w.Write(manager.JSON())
 	})
 
-	app.Use(recover.New())
-	app.Use(log.Middleware())
+	r.Get("/{name}", func(w http.ResponseWriter, r *http.Request) {
+		name := chi.URLParam(r, "name")
 
-	app.Static("/", "./static")
-
-	app.Get("/widgets.json", func(c *fiber.Ctx) error {
-		c.Response().Header.Set("Content-Type", "application/json")
-
-		return c.Send(manager.JSON())
-	})
-
-	app.Get("/:name", func(c *fiber.Ctx) error {
-		name := c.Params("name")
-
-		return manager.Render(c, name)
+		err := manager.Render(w, r, name)
+		if err != nil {
+			http.Error(w, "Failed to render widget", http.StatusInternalServerError)
+		}
 	})
 
 	log.Println("Listening on http://localhost:4777/")
-	log.MustFail(app.Listen(":4777"))
+	log.MustFail(http.ListenAndServe(":4777", r))
 }

@@ -1,3 +1,4 @@
+{{ define "content" }}
 <style>
 	.value {
 		position: relative;
@@ -21,6 +22,7 @@
 
 	fetch("https://ip.shrt.day/")
 		.then(response => response.text())
-		.then(ip => $ip.innerText = ip)
+		.then(ip => $ip.replaceWith(String(ip)))
 		.catch(console.error);
 </script>
+{{ end }}

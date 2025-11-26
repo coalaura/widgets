@@ -1,3 +1,4 @@
+{{ define "content" }}
 <div id="date" class="value"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" crossorigin="anonymous"></script>
@@ -8,3 +9,4 @@
 		$date.innerText = dayjs().format(_.format);
 	}
 </script>
+{{ end }}

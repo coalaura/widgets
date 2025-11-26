@@ -1,3 +1,4 @@
+{{ define "content" }}
 <div id="age" class="value"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" crossorigin="anonymous"></script>
@@ -16,3 +17,4 @@
 		$age.textContent = `You are ${round(preciseAge, _.round)}`;
 	}
 </script>
+{{ end }}

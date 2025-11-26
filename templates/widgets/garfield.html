@@ -1,3 +1,4 @@
+{{ define "content" }}
 <style>
 	img {
 		object-fit: contain;
@@ -6,3 +7,4 @@
 </style>
 
 <img src="https://garfield.land/{{ if .hd }}hd{{ else }}sd{{ end }}" />
+{{ end }}
