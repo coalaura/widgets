@@ -131,15 +131,7 @@ func (m *WidgetManager) RegisterDefault() {
 			"prefix":  NewString("IP is ", "A string to display before the IP address. Can be left empty."),
 			"spoiler": NewBool(false, "If the IP should be blurred until hovered over."),
 		},
-		func(c *fiber.Ctx, options map[string]any) {
-			ip := c.IP()
-
-			if ip == "" {
-				ip = "n/a"
-			}
-
-			options["ip"] = ip
-		},
+		nil,
 	)
 
 	// Display a date progress
