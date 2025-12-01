@@ -3,7 +3,7 @@ module main
 go 1.25.4
 
 require (
-	github.com/coalaura/plain v1.0.1
+	github.com/coalaura/plain v1.1.1
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/mazznoer/csscolorparser v0.1.6
@@ -16,7 +16,7 @@ require (
 	github.com/containerd/console v1.0.5 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/klauspost/compress v1.18.1 // indirect
+	github.com/klauspost/compress v1.18.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
