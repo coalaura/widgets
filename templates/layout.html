@@ -89,6 +89,10 @@
 
 				setInterval(tick, Math.floor(fps));
 			}
+
+			if ("serviceWorker" in navigator) {
+				navigator.serviceWorker.register("/worker.js");
+			}
 		</script>
 	</body>
 </html>
