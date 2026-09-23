@@ -9,27 +9,27 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+	if (event.request.method !== "GET" || new URL(event.request.url).origin !== self.location.origin) {
+		return;
+	}
+
 	event.respondWith(
 		caches.open(CacheName).then(async cache => {
-			let fetchedResponse;
-
 			const cachedResponse = await cache.match(event.request);
 
 			try {
 				const networkResponse = await fetch(event.request);
 
 				if (!networkResponse.ok) {
-					throw new Error(networkResponse.statusText);
+					return cachedResponse || networkResponse;
 				}
 
-				fetchedResponse = networkResponse;
+				event.waitUntil(cache.put(event.request, networkResponse.clone()));
 
-				cache.put(event.request, networkResponse.clone());
+				return networkResponse;
 			} catch {
-				fetchedResponse = cachedResponse;
+				return cachedResponse || Response.error();
 			}
-
-			return fetchedResponse;
 		})
 	);
 });
