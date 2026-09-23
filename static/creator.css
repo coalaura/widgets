@@ -322,6 +322,25 @@ h2 {
 	margin-bottom: 8px;
 }
 
+.option-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.format-help {
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	font-size: 13px;
+	font-weight: 700;
+	color: #b7bdf8;
+}
+
+.format-help:hover {
+	background: #303450;
+}
+
 label {
 	font-size: 13px;
 	font-weight: 700;
@@ -381,6 +400,147 @@ a:focus-visible {
 
 .undo.changed {
 	visibility: visible;
+}
+
+#format-dialog {
+	width: min(560px, calc(100vw - 32px));
+	max-height: calc(100dvh - 32px);
+	padding: 20px;
+	background: #24273a;
+	color: #cad3f5;
+	border: 1px solid #6e738d;
+	border-radius: 2px;
+	box-shadow: 0 18px 48px #0009;
+}
+
+#format-dialog[open] {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+#format-dialog::backdrop {
+	background: #11111bd9;
+}
+
+.format-dialog-heading,
+.format-dialog-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.format-dialog-heading h2 {
+	margin: 0;
+	font-size: 18px;
+	color: #c6a0f6;
+}
+
+.format-dialog-heading button {
+	width: 30px;
+	height: 30px;
+	font-size: 20px;
+}
+
+#format-intro {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.5;
+	color: #b8c0e0;
+}
+
+.format-preview {
+	padding: 12px;
+	background: #1e2030;
+	border: 1px solid #363a51;
+	border-radius: 2px;
+}
+
+#format-preview-label {
+	margin-bottom: 6px;
+	font-size: 11px;
+	color: #b7bdf8;
+}
+
+#format-preview {
+	display: block;
+	min-height: 1.3em;
+	font-size: 14px;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+}
+
+.format-dialog-scroll {
+	min-height: 0;
+	overflow-y: auto;
+}
+
+.format-dialog-scroll h3 {
+	font-size: 12px;
+	color: #b7bdf8;
+	margin: 16px 0 8px;
+}
+
+.format-dialog-scroll h3:first-child {
+	margin-top: 0;
+}
+
+.format-examples {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+	gap: 6px;
+}
+
+.format-examples button,
+.format-tokens button {
+	padding: 8px;
+	text-align: left;
+	font-size: 12px;
+	min-width: 0;
+}
+
+.format-examples button:hover,
+.format-tokens button:hover {
+	border-color: #b7bdf8;
+	background: #303450;
+}
+
+.format-examples code,
+.format-tokens code {
+	color: #a6da95;
+	font: inherit;
+}
+
+.format-tokens {
+	display: grid;
+	gap: 4px;
+}
+
+.format-tokens button {
+	display: grid;
+	grid-template-columns: 4em minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 8px;
+}
+
+.format-tokens em {
+	color: #b8c0e0;
+	font-style: normal;
+}
+
+.format-dialog-actions {
+	justify-content: flex-end;
+}
+
+.format-dialog-actions button {
+	padding: 9px 12px;
+	font-size: 13px;
+}
+
+.format-apply {
+	border-color: #a6da95;
+	color: #a6da95;
 }
 
 #export {

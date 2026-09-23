@@ -1,6 +1,41 @@
 (async () => {
 	const $page = document.getElementById("page"),
-		appearance = ["font", "size", "weight", "color", "align", "fps"];
+		appearance = ["font", "size", "weight", "color", "align", "fps"],
+		calendarTokens = [
+			["YYYY", "2026", "Four-digit year"], ["YY", "26", "Two-digit year"],
+			["MMMM", "October", "Full month"], ["MMM", "Oct", "Short month"],
+			["MM", "10", "Padded month"], ["M", "10", "Month number"],
+			["DD", "03", "Padded day"], ["D", "3", "Day of month"], ["Do", "3rd", "Ordinal day"],
+			["dddd", "Saturday", "Full weekday"], ["ddd", "Sat", "Short weekday"],
+			["dd", "Sa", "Two-letter weekday"], ["d", "6", "Weekday number (Sunday = 0)"]
+		],
+		timeTokens = [
+			["HH", "14", "24-hour, padded"], ["H", "14", "24-hour"],
+			["hh", "02", "12-hour, padded"], ["h", "2", "12-hour"],
+			["mm", "05", "Padded minute"], ["m", "5", "Minute"],
+			["ss", "09", "Padded second"], ["s", "9", "Second"],
+			["SSS", "123", "Milliseconds"], ["A", "PM", "Uppercase AM/PM"], ["a", "pm", "Lowercase am/pm"],
+			["Z", "+02:00", "UTC offset"], ["ZZ", "+0200", "Compact UTC offset"]
+		],
+		formatGuides = {
+			date: {
+				format: {
+					title: "Date & time format",
+					previewLabel: "Current local date and time",
+					examples: ["dddd, MMMM D, h:mm A", "YYYY-MM-DD", "ddd, MMM D", "HH:mm"],
+					tokens: [...calendarTokens.filter(([token]) => token !== "Do"), ...timeTokens]
+				}
+			},
+			holiday: {
+				date_format: {
+					title: "Holiday date format",
+					previewLabel: "Example: October 3, 2026",
+					utc: true,
+					examples: ["MMM Do", "DD.MM.YYYY", "dddd, MMMM D", "YYYY-MM-DD"],
+					tokens: calendarTokens.filter(([token]) => token !== "d" && token !== "dd")
+				}
+			}
+		};
 
 	let Widgets, listObserver;
 
@@ -78,7 +113,7 @@
 		</div>`;
 	}
 
-	function opt(name, option) {
+	function opt(name, option, guide) {
 		const { type, default: def, description, allowed } = option;
 
 		let field;
@@ -94,11 +129,135 @@
 		return `<div class="option">
 			<div class="option-heading">
 				<label for="opt_${name}">${ucfirst(name)}</label>
-				<button class="undo" type="button" title="Reset ${name} to default" aria-label="Reset ${name} to default">Reset</button>
+				<div class="option-actions">
+					${guide ? `<button class="format-help" type="button" data-option="${name}" aria-label="Help with ${ucfirst(name)}" title="Format guide">?</button>` : ""}
+					<button class="undo" type="button" title="Reset ${name} to default" aria-label="Reset ${name} to default">Reset</button>
+				</div>
 			</div>
 			${field}
 			<div class="description">${description}</div>
 		</div>`;
+	}
+
+	function previewDateFormat(pattern, guide) {
+		const date = guide.utc ? new Date("2026-10-03T12:00:00Z") : new Date(),
+			part = field => date[`get${guide.utc ? "UTC" : ""}${field}`](),
+			pad = value => String(value).padStart(2, "0"),
+			year = part("FullYear"),
+			month = part("Month") + 1,
+			day = part("Date"),
+			weekday = part("Day"),
+			hour = part("Hours"),
+			minute = part("Minutes"),
+			second = part("Seconds"),
+			intlOptions = guide.utc ? { timeZone: "UTC" } : {},
+			monthName = new Intl.DateTimeFormat("en", { ...intlOptions, month: "long" }).format(date),
+			weekdayName = new Intl.DateTimeFormat("en", { ...intlOptions, weekday: "long" }).format(date),
+			lastDigit = day % 10,
+			suffix = day % 100 >= 11 && day % 100 <= 13 ? "th" :
+				lastDigit === 1 ? "st" : lastDigit === 2 ? "nd" : lastDigit === 3 ? "rd" : "th",
+			offset = guide.utc ? 0 : -date.getTimezoneOffset(),
+			zone = `${offset < 0 ? "-" : "+"}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`,
+			parts = {
+				YYYY: year, YY: String(year).slice(-2),
+				MMMM: monthName, MMM: new Intl.DateTimeFormat("en", { ...intlOptions, month: "short" }).format(date),
+				MM: pad(month), M: month,
+				DD: pad(day), D: day, Do: `${day}${suffix}`,
+				dddd: weekdayName, ddd: new Intl.DateTimeFormat("en", { ...intlOptions, weekday: "short" }).format(date),
+				dd: weekdayName.slice(0, 2), d: weekday,
+				HH: pad(hour), H: hour, hh: pad(hour % 12 || 12), h: hour % 12 || 12,
+				mm: pad(minute), m: minute, ss: pad(second), s: second, SSS: String(date.getMilliseconds()).padStart(3, "0"),
+				A: hour < 12 ? "AM" : "PM", a: hour < 12 ? "am" : "pm", Z: zone, ZZ: zone.replace(":", "")
+			},
+			tokens = guide.tokens.map(([token]) => token).sort((first, second) => second.length - first.length),
+			matcher = new RegExp(`\\[[^\\]]*\\]|${tokens.join("|")}`, "g");
+
+		return pattern.replace(matcher, token => token.startsWith("[") ? token.slice(1, -1) : parts[token]);
+	}
+
+	function formatDialog() {
+		return `<dialog id="format-dialog" aria-labelledby="format-title" aria-describedby="format-intro">
+			<div class="format-dialog-heading">
+				<h2 id="format-title"></h2>
+				<button class="format-close" type="button" aria-label="Close format guide">×</button>
+			</div>
+			<p id="format-intro">Choose a pattern or click tokens to insert them at the cursor. Wrap literal words in [brackets].</p>
+			<label for="format-builder">Your format</label>
+			<input id="format-builder" type="text" spellcheck="false" />
+			<div class="format-preview">
+				<div id="format-preview-label"></div>
+				<output id="format-preview" for="format-builder" aria-live="polite"></output>
+			</div>
+			<div class="format-dialog-scroll">
+				<h3>Examples</h3>
+				<div id="format-examples" class="format-examples"></div>
+				<h3>Available tokens</h3>
+				<div id="format-tokens" class="format-tokens"></div>
+			</div>
+			<div class="format-dialog-actions">
+				<button class="format-cancel" type="button">Cancel</button>
+				<button class="format-apply" type="button">Use format</button>
+			</div>
+		</dialog>`;
+	}
+
+	function connectFormatDialog(widget) {
+		const $dialog = document.getElementById("format-dialog"),
+			$builder = $dialog.querySelector("#format-builder"),
+			$preview = $dialog.querySelector("#format-preview");
+		let $input, guide;
+
+		function updatePreview() {
+			$preview.textContent = $builder.value ? previewDateFormat($builder.value, guide) : "Enter a format to see a preview";
+		}
+
+		$builder.addEventListener("input", updatePreview);
+
+		for (const $button of document.querySelectorAll(".format-help")) {
+			$button.addEventListener("click", () => {
+				$input = document.getElementById(`opt_${$button.dataset.option}`);
+				guide = formatGuides[widget.name][$button.dataset.option];
+				$builder.value = $input.value;
+				$dialog.querySelector("#format-title").textContent = guide.title;
+				$dialog.querySelector("#format-preview-label").textContent = guide.previewLabel;
+				$dialog.querySelector("#format-examples").innerHTML = guide.examples.map((pattern, index) =>
+					`<button type="button" data-example="${index}"><code>${pattern}</code></button>`).join("");
+				$dialog.querySelector("#format-tokens").innerHTML = guide.tokens.map(([token, example, description], index) =>
+					`<button type="button" data-token="${index}" title="Insert ${token}"><code>${token}</code><span>${description}</span><em>${example}</em></button>`).join("");
+				updatePreview();
+				$dialog.showModal();
+				$builder.focus();
+			});
+		}
+
+		$dialog.addEventListener("click", event => {
+			const $example = event.target.closest("[data-example]"),
+				$token = event.target.closest("[data-token]");
+
+			if ($example) {
+				$builder.value = guide.examples[Number($example.dataset.example)];
+				$builder.focus();
+				$builder.setSelectionRange($builder.value.length, $builder.value.length);
+				updatePreview();
+			} else if ($token) {
+				const token = guide.tokens[Number($token.dataset.token)][0];
+
+				$builder.setRangeText(token, $builder.selectionStart, $builder.selectionEnd, "end");
+				$builder.focus();
+				updatePreview();
+			}
+		});
+
+		$dialog.querySelector(".format-apply").addEventListener("click", () => {
+			$input.value = $builder.value;
+			$input.dispatchEvent(new Event("input", { bubbles: true }));
+			$dialog.close();
+			$input.focus();
+		});
+
+		for (const selector of [".format-close", ".format-cancel"]) {
+			$dialog.querySelector(selector).addEventListener("click", () => $dialog.close());
+		}
 	}
 
 	function importUrl(value) {
@@ -168,7 +327,7 @@
 			options[name] = widget.options[name].default;
 
 			if (!appearance.includes(name)) {
-				specificOptions += opt(name, widget.options[name]);
+				specificOptions += opt(name, widget.options[name], formatGuides[widget.name]?.[name]);
 			}
 		}
 
@@ -207,7 +366,11 @@
 			</section>
 		</div>`;
 
-		$page.innerHTML = html + footer();
+		$page.innerHTML = html + (formatGuides[widget.name] ? formatDialog() : "") + footer();
+
+		if (formatGuides[widget.name]) {
+			connectFormatDialog(widget);
+		}
 
 		const $export = document.getElementById("export"),
 			$import = document.getElementById("import-form"),
