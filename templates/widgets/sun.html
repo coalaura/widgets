@@ -1,0 +1,17 @@
+{{ define "content" }}
+<div class="tile">
+	{{ if .available }}
+		<div class="primary sky-primary">
+			<svg class="sky-icon" viewBox="0 0 32 32" aria-hidden="true">
+				<circle cx="16" cy="16" r="5" fill="currentColor" />
+				<path d="M16 2v5 M16 25v5 M2 16h5 M25 16h5 M6 6l4 4 M22 22l4 4 M26 6l-4 4 M10 22l-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+			</svg>
+			<span class="sky-label">{{ .times }}</span>
+		</div>
+		<div class="detail">Sunrise / sunset · {{ .place }} local time</div>
+	{{ else }}
+		<div class="primary">Sun times unavailable</div>
+		<div class="detail">Check the city and try again later</div>
+	{{ end }}
+</div>
+{{ end }}

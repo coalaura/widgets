@@ -1,0 +1,50 @@
+{{ define "content" }}
+<style>
+	#curiosity-fact {
+		white-space: normal;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
+</style>
+
+<div class="tile">
+	<div id="curiosity-fact" class="primary"></div>
+	<div class="detail">Today's curiosity</div>
+</div>
+
+<script>
+	const facts = [
+		"A day on Venus lasts longer than a year on Venus.",
+		"Octopuses have three hearts and blue blood.",
+		"The Moon drifts about 3.8 cm farther from Earth each year.",
+		"Sharks evolved before the first trees appeared.",
+		"A teaspoon of neutron-star matter would weigh billions of tons.",
+		"The International Space Station orbits Earth roughly every 90 minutes.",
+		"Saturn's average density is lower than water's.",
+		"The world's largest living organism is a fungus in Oregon.",
+		"Honeybees use dances to tell other bees where food is.",
+		"Some bamboo species can grow nearly a meter in a day.",
+		"The Sun accounts for more than 99% of the Solar System's mass.",
+		"A blue whale's heart can weigh more than 150 kilograms.",
+		"The first photograph of Earth from space was taken in 1946.",
+		"Antarctica is the driest continent on Earth.",
+		"Jupiter's Great Red Spot is a storm lasting centuries.",
+		"The smell after rain is called petrichor.",
+		"A group of flamingos is called a flamboyance.",
+		"Some sea turtles can sense Earth's magnetic field.",
+		"The human body contains enough iron to make a small nail.",
+		"The world's oceans contain underwater mountain ranges."
+	];
+
+	function refreshCuriosity() {
+		const today = new Date(),
+			day = Math.floor(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) / 86400000);
+
+		document.getElementById("curiosity-fact").textContent = facts[day % facts.length];
+	}
+
+	refreshCuriosity();
+	setInterval(refreshCuriosity, 3600000);
+</script>
+{{ end }}

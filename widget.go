@@ -278,4 +278,6 @@ func (m *WidgetManager) RegisterDefault() {
 		nil,
 		"medium",
 	)
+
+	m.RegisterEnvironment()
 }

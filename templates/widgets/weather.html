@@ -1,0 +1,11 @@
+{{ define "content" }}
+<div class="tile">
+	{{ if .available }}
+		<div class="primary">{{ .temperature }}°{{ .unit }} · {{ .conditions }}</div>
+		<div class="detail">Current weather in {{ .place }}</div>
+	{{ else }}
+		<div class="primary">Weather unavailable</div>
+		<div class="detail">Check the city and try again later</div>
+	{{ end }}
+</div>
+{{ end }}

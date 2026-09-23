@@ -1,0 +1,27 @@
+{{ define "content" }}
+<div class="tile">
+	<div id="week-number" class="primary"></div>
+	<div id="week-detail" class="detail"></div>
+</div>
+
+<script>
+	function refreshWeek() {
+		const today = new Date(),
+			weekday = today.getDay(),
+			thursday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+
+		thursday.setUTCDate(thursday.getUTCDate() + 4 - (weekday || 7));
+
+		const yearStart = Date.UTC(thursday.getUTCFullYear(), 0, 1),
+			week = Math.ceil(((thursday.getTime() - yearStart) / 86400000 + 1) / 7),
+			remaining = 6 - weekday;
+
+		document.getElementById("week-number").textContent = `Week ${week}`;
+		document.getElementById("week-detail").textContent = remaining <= 0 ? "Enjoy the weekend" :
+			`Weekend in ${remaining} day${remaining === 1 ? "" : "s"}`;
+	}
+
+	refreshWeek();
+	setInterval(refreshWeek, 3600000);
+</script>
+{{ end }}

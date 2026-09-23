@@ -1,0 +1,11 @@
+{{ define "content" }}
+<div class="tile">
+	{{ if .available }}
+		<div class="primary">{{ if gt .minutes 0 }}+{{ end }}{{ .minutes }} min vs yesterday</div>
+		<div class="detail">{{ .place }} · {{ .hours }}h {{ .remainder }}m daylight today</div>
+	{{ else }}
+		<div class="primary">Daylight unavailable</div>
+		<div class="detail">Check the city and try again later</div>
+	{{ end }}
+</div>
+{{ end }}

@@ -47,6 +47,47 @@
 				white-space: pre;
 			}
 
+			.tile {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: {{ if eq .align "left" }}flex-start{{ else if eq .align "right" }}flex-end{{ else }}center{{ end }};
+				gap: 0.15em;
+				font-weight: {{ .weight }};
+				text-align: {{ .align }};
+			}
+
+			.tile .primary,
+			.tile .detail {
+				max-width: 100%;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.tile .detail {
+				font-size: 0.78em;
+				opacity: 0.8;
+			}
+
+			.sky-primary {
+				display: flex;
+				align-items: center;
+				gap: 0.35em;
+			}
+
+			.sky-icon {
+				width: 1.3em;
+				height: 1.3em;
+				flex: none;
+			}
+
+			.sky-label {
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
 			textarea {
 				border: none;
 				background: transparent;

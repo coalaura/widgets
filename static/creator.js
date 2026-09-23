@@ -49,7 +49,7 @@
 	}
 
 	function ucfirst(name) {
-		return name.charAt(0).toUpperCase() + name.slice(1);
+		return name.charAt(0).toUpperCase() + name.slice(1).replaceAll("_", " ");
 	}
 
 	function input(type, name, value) {
@@ -213,7 +213,8 @@
 			$import = document.getElementById("import-form"),
 			$options = [...document.querySelectorAll(".option")],
 			$preview = document.getElementById("preview"),
-			$stage = document.querySelector(".preview-stage");
+			$stage = document.querySelector(".preview-stage"),
+			$holidayDisplay = widget.name === "holiday" ? document.getElementById("opt_display") : null;
 
 		$import.querySelector("input").value = importedUrl;
 
@@ -304,6 +305,18 @@
 				},
 				false
 			);
+		}
+
+		if ($holidayDisplay) {
+			const $dateFormat = document.getElementById("opt_date_format").closest(".option");
+			$holidayDisplay.closest(".option").after($dateFormat);
+
+			function showDateFormat() {
+				$dateFormat.hidden = $holidayDisplay.value === "relative";
+			}
+
+			$holidayDisplay.addEventListener("input", showDateFormat);
+			showDateFormat();
 		}
 
 		function update() {

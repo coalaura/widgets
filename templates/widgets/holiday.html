@@ -1,0 +1,69 @@
+{{ define "content" }}
+<div class="tile">
+	<div id="holiday-name" class="primary"></div>
+	<div id="holiday-when" class="detail"></div>
+</div>
+
+<script>
+	const upcomingHolidays = ({{ .holidays | json }} || []).sort((first, second) => first.date.localeCompare(second.date)),
+		country = {{ .country | json }},
+		display = {{ .display | json }},
+		dateFormat = {{ .date_format | json }};
+
+	function calendarDate(value) {
+		const [year, month, day] = value.split("-").map(Number),
+			date = new Date(`${value}T12:00:00Z`),
+			formatPart = options => new Intl.DateTimeFormat("en", { ...options, timeZone: "UTC" }).format(date),
+			lastDigit = day % 10,
+			suffix = day % 100 >= 11 && day % 100 <= 13 ? "th" :
+				lastDigit === 1 ? "st" : lastDigit === 2 ? "nd" : lastDigit === 3 ? "rd" : "th",
+			parts = {
+				YYYY: year,
+				YY: String(year).slice(-2),
+				MMMM: formatPart({ month: "long" }),
+				MMM: formatPart({ month: "short" }),
+				MM: String(month).padStart(2, "0"),
+				M: month,
+				Do: `${day}${suffix}`,
+				DD: String(day).padStart(2, "0"),
+				D: day,
+				dddd: formatPart({ weekday: "long" }),
+				ddd: formatPart({ weekday: "short" })
+			};
+
+		return dateFormat.replace(/\[[^\]]*\]|YYYY|YY|MMMM|MMM|MM|M|Do|DD|D|dddd|ddd/g, token =>
+			token.startsWith("[") ? token.slice(1, -1) : parts[token]);
+	}
+
+	function refreshHoliday() {
+		const today = new Date(),
+			day = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()),
+			date = new Date(day).toISOString().slice(0, 10),
+			holiday = upcomingHolidays.find(entry => entry.date >= date),
+			$name = document.getElementById("holiday-name"),
+			$when = document.getElementById("holiday-when");
+
+		if (!holiday) {
+			$name.textContent = "No holiday found";
+			$when.textContent = "Check the country or region code";
+			return;
+		}
+
+		const days = Math.round((Date.parse(`${holiday.date}T00:00:00Z`) - day) / 86400000);
+		const relative = days === 0 ? "Today" : `In ${days} day${days === 1 ? "" : "s"}`;
+		let when = relative;
+
+		if (display === "date") {
+			when = `On ${calendarDate(holiday.date)}`;
+		} else if (display === "both") {
+			when = `${calendarDate(holiday.date)} · ${relative.toLowerCase()}`;
+		}
+
+		$name.textContent = holiday.name;
+		$when.textContent = `${when} · ${country}`;
+	}
+
+	refreshHoliday();
+	setInterval(refreshHoliday, 3600000);
+</script>
+{{ end }}
