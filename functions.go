@@ -1,14 +1,6 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/gofiber/fiber/v2"
-)
-
-func abort(c *fiber.Ctx, code int) error {
-	return c.SendStatus(code)
-}
+import "fmt"
 
 func slice(values ...any) []string {
 	result := make([]string, len(values))

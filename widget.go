@@ -22,8 +22,9 @@ type Widget struct {
 
 type WidgetManager struct {
 	sync.RWMutex
-	json    []byte
-	widgets map[string]*Widget
+	json        []byte
+	jsonExpires time.Time
+	widgets     map[string]*Widget
 }
 
 func NewWidget(name, description string, options Options, handler Handler, size string) *Widget {
@@ -81,6 +82,7 @@ func (m *WidgetManager) Register(name, description string, options Options, hand
 	defer m.Unlock()
 
 	m.widgets[name] = NewWidget(name, description, options, handler, optional(size))
+	m.json = nil
 }
 
 func (m *WidgetManager) Get(name string) *Widget {
@@ -96,10 +98,21 @@ func (m *WidgetManager) Get(name string) *Widget {
 
 func (m *WidgetManager) JSON() []byte {
 	m.RLock()
-	defer m.RUnlock()
 
-	if m.json == nil {
-		var list []*Widget
+	if m.json != nil && time.Now().Before(m.jsonExpires) {
+		data := m.json
+		m.RUnlock()
+
+		return data
+	}
+
+	m.RUnlock()
+
+	m.Lock()
+	defer m.Unlock()
+
+	if m.json == nil || time.Now().After(m.jsonExpires) {
+		list := make([]*Widget, 0, len(m.widgets))
 
 		for _, widget := range m.widgets {
 			list = append(list, widget)
@@ -109,7 +122,15 @@ func (m *WidgetManager) JSON() []byte {
 			return list[a].Name < list[b].Name
 		})
 
-		m.json, _ = json.Marshal(list)
+		data, err := json.Marshal(list)
+		if err != nil {
+			log.Warnf("unable to encode widgets: %v\n", err)
+
+			return nil
+		}
+
+		m.json = data
+		m.jsonExpires = time.Now().Add(time.Minute)
 	}
 
 	return m.json
@@ -204,8 +225,8 @@ func (m *WidgetManager) RegisterDefault() {
 		"currency",
 		"Converts an amount from one currency to another using up-to-date exchange rates.",
 		Options{
-			"from":   NewEnum("EUR", currencies.Enum(), "The currency code to convert from. Accepts any valid (and supported) 3 letter currency code."),
-			"to":     NewEnum("USD", currencies.Enum(), "The currency code to convert to. Accepts any valid (and supported) 3 letter currency code."),
+			"from":   NewDynamicEnum("EUR", currencies.Enum, "The currency code to convert from. Accepts any valid (and supported) 3 letter currency code."),
+			"to":     NewDynamicEnum("USD", currencies.Enum, "The currency code to convert to. Accepts any valid (and supported) 3 letter currency code."),
 			"round":  NewInt(3, "The maximum decimal precision of the conversion."),
 			"amount": NewFloat(1.0, "The amount of the 'from' currency to convert."),
 			"format": NewString("{amount} {from} = {rate} {to}", "How to format the resulting conversion rate."),

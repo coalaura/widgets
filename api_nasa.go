@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -17,24 +16,11 @@ type NasaApod struct {
 type NasaStore struct {
 	sync.RWMutex
 
-	APOD NasaApod
+	APOD    NasaApod
+	expires time.Time
 }
 
 var nasa = NewNasaStore()
-
-func init() {
-	nasa.UpdateAPOD()
-
-	ticker := time.NewTicker(1 * time.Hour)
-
-	go func() {
-		defer ticker.Stop()
-
-		for range ticker.C {
-			nasa.UpdateAPOD()
-		}
-	}()
-}
 
 func NewNasaStore() *NasaStore {
 	return &NasaStore{}
@@ -42,31 +28,63 @@ func NewNasaStore() *NasaStore {
 
 func (n *NasaStore) GetAPOD() NasaApod {
 	n.RLock()
-	defer n.RUnlock()
 
-	return n.APOD
-}
+	if time.Now().Before(n.expires) {
+		apod := n.APOD
+		n.RUnlock()
 
-func (n *NasaStore) UpdateAPOD() {
-	resp, err := http.Get(fmt.Sprintf("https://api.nasa.gov/planetary/apod?api_key=%s", NasaAPIKey))
-	if err != nil {
-		log.Warnf("unable to query api.nasa.gov: %v\n", err)
-
-		return
+		return apod
 	}
 
-	defer resp.Body.Close()
-
-	var result NasaApod
-
-	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		log.Warnf("unable to decode api.nasa.gov: %v\n", err)
-
-		return
-	}
+	n.RUnlock()
 
 	n.Lock()
 	defer n.Unlock()
 
+	if !time.Now().Before(n.expires) {
+		if n.updateAPOD() {
+			n.expires = time.Now().Add(apiCacheTTL)
+		} else {
+			n.expires = time.Now().Add(apiRetryDelay)
+		}
+	}
+
+	return n.APOD
+}
+
+// updateAPOD runs while n is locked and preserves the previous image on failure.
+func (n *NasaStore) updateAPOD() bool {
+	resp, err := apiClient.Get("https://api.nasa.gov/planetary/apod?api_key=" + NasaAPIKey)
+	if err != nil {
+		log.Warnf("unable to query api.nasa.gov: %v\n", err)
+
+		return false
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Warnf("api.nasa.gov returned %s\n", resp.Status)
+
+		return false
+	}
+
+	var result NasaApod
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		log.Warnf("unable to decode api.nasa.gov: %v\n", err)
+
+		return false
+	}
+
+	if result.HdUrl == "" {
+		log.Warnf("api.nasa.gov returned no image URL\n")
+
+		return false
+	}
+
 	n.APOD = result
+
+	return true
 }

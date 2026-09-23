@@ -73,7 +73,9 @@
 			}
 
 			function round(val, decimals = 1) {
-				return val.toFixed(decimals).replace(/\.?0+$/, '');
+				const fixed = val.toFixed(decimals);
+
+				return decimals === 0 ? fixed : fixed.replace(/\.?0+$/, '');
 			}
 		</script>
 	</head>

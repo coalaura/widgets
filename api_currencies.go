@@ -11,6 +11,7 @@ import (
 
 type CurrencyStore struct {
 	sync.RWMutex
+	expires time.Time
 
 	Amount float64            `json:"amount"`
 	Base   string             `json:"base"`
@@ -19,20 +20,6 @@ type CurrencyStore struct {
 
 var currencies = NewCurrencyStore()
 
-func init() {
-	currencies.Update()
-
-	ticker := time.NewTicker(10 * time.Minute)
-
-	go func() {
-		defer ticker.Stop()
-
-		for range ticker.C {
-			currencies.Update()
-		}
-	}()
-}
-
 func NewCurrencyStore() *CurrencyStore {
 	return &CurrencyStore{
 		Rates: make(map[string]float64),
@@ -40,15 +27,22 @@ func NewCurrencyStore() *CurrencyStore {
 }
 
 func (c *CurrencyStore) Enum() []string {
-	enum := []string{c.Base}
+	c.ensureFresh()
 
 	c.RLock()
+	defer c.RUnlock()
+
+	if c.Base == "" {
+		return []string{"EUR", "USD"}
+	}
+
+	enum := make([]string, 0, len(c.Rates)+1)
+
+	enum = append(enum, c.Base)
 
 	for currency := range c.Rates {
 		enum = append(enum, currency)
 	}
-
-	c.RUnlock()
 
 	sort.Strings(enum)
 
@@ -56,6 +50,8 @@ func (c *CurrencyStore) Enum() []string {
 }
 
 func (c *CurrencyStore) CalculateRate(from, to string) float64 {
+	c.ensureFresh()
+
 	from = strings.ToUpper(from)
 	to = strings.ToUpper(to)
 
@@ -94,28 +90,64 @@ func (c *CurrencyStore) CalculateRate(from, to string) float64 {
 	return toRate / fromRate
 }
 
-func (c *CurrencyStore) Update() {
-	resp, err := http.Get("https://api.frankfurter.dev/v1/latest")
-	if err != nil {
-		log.Warnf("unable to query frankfurter.dev: %v\n", err)
+func (c *CurrencyStore) ensureFresh() {
+	c.RLock()
+	fresh := time.Now().Before(c.expires)
+	c.RUnlock()
 
-		return
-	}
-
-	defer resp.Body.Close()
-
-	var result CurrencyStore
-
-	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		log.Warnf("unable to decode frankfurter.dev: %v\n", err)
-
+	if fresh {
 		return
 	}
 
 	c.Lock()
 	defer c.Unlock()
 
+	if time.Now().Before(c.expires) {
+		return
+	}
+
+	if c.update() {
+		c.expires = time.Now().Add(apiCacheTTL)
+	} else {
+		c.expires = time.Now().Add(apiRetryDelay)
+	}
+}
+
+// update runs while c is locked and preserves the previous rates on failure.
+func (c *CurrencyStore) update() bool {
+	resp, err := apiClient.Get("https://api.frankfurter.dev/v1/latest")
+	if err != nil {
+		log.Warnf("unable to query frankfurter.dev: %v\n", err)
+
+		return false
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Warnf("frankfurter.dev returned %s\n", resp.Status)
+
+		return false
+	}
+
+	var result CurrencyStore
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		log.Warnf("unable to decode frankfurter.dev: %v\n", err)
+
+		return false
+	}
+
+	if result.Base == "" || len(result.Rates) == 0 {
+		log.Warnf("frankfurter.dev returned incomplete rates\n")
+
+		return false
+	}
+
 	c.Amount = result.Amount
 	c.Base = result.Base
 	c.Rates = result.Rates
+
+	return true
 }

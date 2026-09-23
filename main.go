@@ -21,21 +21,37 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(log.Middleware())
 
-	r.Get("/widgets.json", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	static := http.FileServer(http.Dir("static"))
 
-		w.Write(manager.JSON())
-	})
+	r.Get("/", indexPage)
 
-	r.Get("/{name}", func(w http.ResponseWriter, r *http.Request) {
-		name := chi.URLParam(r, "name")
+	r.Handle("/creator.js", static)
+	r.Handle("/creator.css", static)
+	r.Handle("/worker.js", static)
 
-		err := manager.Render(w, r, name)
-		if err != nil {
-			http.Error(w, "Failed to render widget", http.StatusInternalServerError)
-		}
-	})
+	r.Get("/widgets.json", widgetList)
+
+	r.Get("/{name}", widgetPage)
 
 	log.Println("Listening on http://localhost:4777/")
 	log.MustFail(http.ListenAndServe(":4777", r))
+}
+
+func indexPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/index.html")
+}
+
+func widgetList(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Write(manager.JSON())
+}
+
+func widgetPage(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name")
+
+	err := manager.Render(w, r, name)
+	if err != nil {
+		http.Error(w, "Failed to render widget", http.StatusInternalServerError)
+	}
 }

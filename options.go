@@ -48,8 +48,9 @@ type OptionString struct {
 
 type OptionEnum struct {
 	BaseOption
-	def     string
-	allowed []string
+	def         string
+	allowed     []string
+	allowedFunc func() []string
 }
 
 func NewInt(def int, description string) Option {
@@ -104,6 +105,14 @@ func NewEnum(def string, allowed []string, description string) Option {
 	}
 }
 
+func NewDynamicEnum(def string, allowed func() []string, description string) Option {
+	return &OptionEnum{
+		BaseOption:  BaseOption{"select", description},
+		def:         def,
+		allowedFunc: allowed,
+	}
+}
+
 func (o *Options) RegisterDefault(name, def, description string) {
 	if _, ok := (*o)[name]; ok {
 		return
@@ -123,7 +132,7 @@ func (o Options) MarshalJSON() ([]byte, error) {
 		}
 
 		if enum, ok := opt.(*OptionEnum); ok {
-			entry["allowed"] = enum.allowed
+			entry["allowed"] = enum.Allowed()
 		}
 
 		output[key] = entry
@@ -156,6 +165,14 @@ func (o *OptionEnum) Default() any {
 	return o.def
 }
 
+func (o *OptionEnum) Allowed() []string {
+	if o.allowedFunc != nil {
+		return o.allowedFunc()
+	}
+
+	return o.allowed
+}
+
 func (o *BaseOption) Description() string {
 	return o.description
 }
@@ -165,7 +182,8 @@ func (o *OptionInt) Value(input string) any {
 		return o.def
 	}
 
-	if value, err := strconv.ParseInt(input, 10, 64); err == nil {
+	value, err := strconv.ParseInt(input, 10, 64)
+	if err == nil {
 		return int(value)
 	}
 
@@ -177,7 +195,8 @@ func (o *OptionFloat) Value(input string) any {
 		return o.def
 	}
 
-	if value, err := strconv.ParseFloat(input, 64); err == nil {
+	value, err := strconv.ParseFloat(input, 64)
+	if err == nil {
 		return value
 	}
 
@@ -211,11 +230,11 @@ func (o *OptionString) Value(input string) any {
 }
 
 func (o *OptionEnum) Value(input string) any {
-	if input == "" || len(o.allowed) == 0 {
+	if input == "" {
 		return o.def
 	}
 
-	for _, value := range o.allowed {
+	for _, value := range o.Allowed() {
 		if value == input {
 			return value
 		}
