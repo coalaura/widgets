@@ -2,7 +2,9 @@
 <style>
 	#quote-text {
 		white-space: normal;
-		overflow-wrap: anywhere;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
 	}
 </style>
 
@@ -15,7 +17,6 @@
 	{{ else }}
 		<div class="primary">Quote unavailable</div>
 	{{ end }}
-	<div class="detail">Shitpost Quotes</div>
 </div>
 
 <script>
