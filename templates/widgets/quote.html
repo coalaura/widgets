@@ -1,0 +1,26 @@
+{{ define "content" }}
+<style>
+	#quote-text {
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+</style>
+
+<div class="tile">
+	{{ if .available }}
+		<div id="quote-text" class="primary">{{ .quote.Text }}</div>
+		{{ if .quote.Author }}
+			<div class="detail">{{ .quote.Author }}</div>
+		{{ end }}
+	{{ else }}
+		<div class="primary">Quote unavailable</div>
+	{{ end }}
+	<div class="detail">Shitpost Quotes</div>
+</div>
+
+<script>
+	setTimeout(() => {
+		window.location.reload();
+	}, {{ if .available }}3600000{{ else }}60000{{ end }});
+</script>
+{{ end }}

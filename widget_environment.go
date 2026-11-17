@@ -123,10 +123,14 @@ func (m *WidgetManager) RegisterEnvironment() {
 	)
 
 	m.Register(
-		"curiosity",
-		"A small science or nature fact that changes every day.",
+		"quote",
+		"The daily quote from Shitpost Quotes.",
 		nil,
-		nil,
+		func(_ http.ResponseWriter, _ *http.Request, options map[string]any) {
+			data, ok := quotes.get("daily", apiCacheTTL, fetchQuote)
+			options["available"] = ok
+			options["quote"] = data
+		},
 	)
 }
 
